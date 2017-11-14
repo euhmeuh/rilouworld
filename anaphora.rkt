@@ -1,16 +1,17 @@
 #lang racket
 
-(provide anaphoric-macro aif awhen alambda atree)
+(provide define-asyntax define-asyntax-rule aif awhen alambda atree)
 
-(define-syntax anaphoric-macro
-  (syntax-rules ()
-    ((_ name (anaphora ...) (pattern template) ...)
-     (define-syntax name
-       (lambda (x)
-         (syntax-case x ()
-           (pattern
-            (with-syntax ((anaphora (datum->syntax x 'anaphora)) ...)
-              (syntax template))) ...))))))
+(define-syntax-rule (define-asyntax name (anaphora ...) (pattern template) ...)
+  (define-syntax (name stx)
+    (syntax-case stx ()
+      [pattern
+       (with-syntax [(anaphora (datum->syntax stx 'anaphora)) ...]
+         (syntax template))] ...)))
+
+(define-syntax-rule (define-asyntax-rule (name pattern ...) (anaphora ...) template)
+  (define-asyntax name (anaphora ...)
+    [(_ pattern ...) template]))
 
 ;; Anaphoric if that binds "it" to the result
 ;; of the condition
@@ -20,15 +21,15 @@
 ;;   (display it)
 ;;   (display "Nope"))
 ;;
-(anaphoric-macro aif (it)
-  ((_ test then else)
-   (let ((it test)) (if it then else))))
+(define-asyntax-rule (aif test then else) (it)
+  (let ((it test))
+    (if it then else)))
 
 ;; Anaphoric when that binds "it" to the result
 ;; of the condition
-(anaphoric-macro awhen (it)
-  ((_ test body ...)
-   (let ((it test)) (when it body ...))))
+(define-asyntax-rule (awhen test body ...) (it)
+  (let ((it test))
+    (when it body ...)))
 
 ;; Anaphoric lambda that binds "self" to itself
 ;; in order to allow recursion
@@ -41,25 +42,21 @@
 ;;       (self (- n 1)))
 ;;   '()))
 ;;
-(anaphoric-macro alambda (self)
-  ((_ params body)
-   (letrec ((self (lambda params body)))
-     self)))
+(define-asyntax-rule (alambda params body) (self)
+  (let ((self (lambda params body)))
+    self))
 
 ;; anaphoric tree walking
 ;;
 ;; Example:
-;; (tree-walk '(1 2 (3 4 (5 6)))
-;;            (and (number? it) (even? it))
-;;            'even-number)
+;; (atree '(1 2 (3 4 (5 6)))
+;;        (and (number? it) (even? it))
+;;        'even-number)
 ;;
-(anaphoric-macro atree (it)
-  ((_ tree test result)
-   (tree-leaves tree
-     (lambda (it)
-       test)
-     (lambda (it)
-       result))))
+(define-asyntax-rule (atree test result) (it)
+  (tree-leaves tree
+    (lambda (it) test)
+    (lambda (it) result)))
 
 (define (tree-leaves tree test result)
     (if (and (list? tree) (not (null? tree)))
