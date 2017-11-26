@@ -1,33 +1,55 @@
 #lang racket
 
 (require
-  racket/gui/base
-  sgl
-  sgl/gl
-  sgl/gl-vectors)
+  mode-lambda
+  mode-lambda/static
+  lux
+  lux/chaos/gui
+  lux/chaos/gui/key
+  (prefix-in gl: mode-lambda/backend/gl))
 
-(define frame (new frame%
-                   [label "Final Experience"]
-                   [width 512]
-                   [height 384]))
+(define *label* "Rilouworld")
+(define *width* 512)
+(define *height* 384)
 
-(define (painter canvas dc)
-  (send canvas with-gl-context
-    (lambda ()
-      (gl-begin 'triangles)
-      (gl-vertex 1 2 3)
-      (gl-vertex-v (gl-float-vector 1 2 3 4))
-      (gl-end)
-      (gl-flush)
-      (send canvas swap-gl-buffers)
-      )))
+(define (prepare-render-context)
+  (define gl-texture-layers 8)
+  (define compiled-sprite-db (compile-sprite-db (make-sprite-db)))
+  (gl:stage-draw/dc compiled-sprite-db
+                    *width*
+                    *height*
+                    gl-texture-layers))
 
-(define cfg (new gl-config%))
+(define (prepare-layer-config)
+  (vector))
 
-(define canvas (new canvas%
-                    [parent frame]
-                    [paint-callback painter]
-                    [style '(gl no-autoclear)]
-                    [gl-config cfg]))
+(define (make-renderer render-context)
+  (define static-states '())
+  (define dynamic-states '())
+  (define layer-config (prepare-layer-config))
+  (lambda ()
+    (render-context layer-config static-states dynamic-states)))
 
-(send frame show #t)
+(struct game (render-context renderer)
+  #:methods gen:word
+  [(define (word-fps word) 60.0)
+   (define (word-label word frame-time)
+     (lux-standard-label *label* frame-time))
+   (define (word-output word)
+     ((game-renderer word)))
+   (define (word-event word event)
+     (cond
+       [(or (eq? event 'close)
+            (and (key-event? event)
+                 (eq? 'escape (key-event-code event))))
+        #f]
+       [else word]))
+   (define (word-tick word)
+     word)])
+
+(call-with-chaos
+  (make-gui #:mode gl:gui-mode)
+  (lambda ()
+    (define render-context (prepare-render-context))
+    (fiat-lux (game render-context
+                    (make-renderer render-context)))))
