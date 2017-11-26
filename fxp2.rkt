@@ -1,6 +1,6 @@
 #lang racket
 
-(require "state_machine.rkt")
+(require "state-machine.rkt")
 
 (define-syntax-rule (dimension body ...)
   (begin
@@ -86,12 +86,12 @@
     keys))
 
 (display (format "Player state is:\n"))
-(display (format "Movement: ~a\n" ((player 'movement-state) 'state)))
-(display (format "Action: ~a\n" ((player 'action-state) 'state)))
+(display (format "\tMovement: ~a\n" ((player 'movement-state) 'state)))
+(display (format "\tAction: ~a\n" ((player 'action-state) 'state)))
 
 (display (format "We send keyboard events!\n"))
 (update '(up-pressed mouse-left-pressed))
 
 (display (format "Player state is now:\n"))
-(display (format "Movement: ~a\n" ((player 'movement-state) 'state)))
-(display (format "Action: ~a\n" ((player 'action-state) 'state)))
+(display (format "\tMovement: ~a\n" ((player 'movement-state) 'state)))
+(display (format "\tAction: ~a\n" ((player 'action-state) 'state)))
