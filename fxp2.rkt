@@ -1,6 +1,8 @@
 #lang racket
 
-(require "state-machine.rkt")
+(require
+  "engine.rkt"
+  "state-machine.rkt")
 
 (define-syntax-rule (dimension body ...)
   (begin
@@ -95,3 +97,6 @@
 (display (format "Player state is now:\n"))
 (display (format "\tMovement: ~a\n" ((player 'movement-state) 'state)))
 (display (format "\tAction: ~a\n" ((player 'action-state) 'state)))
+
+(define options (options§ 512 384 "Rilouworld"))
+(engine-start options)
