@@ -64,7 +64,7 @@
 
 (struct engine-options (width height title))
 
-(define (engine-start options)
+(define (engine-start options dimension account)
   (call-with-chaos
     (make-gui #:mode gl:gui-mode)
     (thunk
