@@ -7,7 +7,7 @@
   ;; open a window and start the main game loop, handling inputs and displaying graphics
   engine-start
   ;; engine initial configuration
-  (struct-out options§))
+  (struct-out engine-options))
 
 (require
   racket/function
@@ -31,7 +31,7 @@
   (gl:stage-draw/dc sprite-db width height *nb-of-layers*))
 
 (define (prepare-layer-config options)
-  (with-values options (width height) from options§
+  (with-values options (width height) from engine-options
     (vector (layer (/ width 2.) (/ height 2.)))))
 
 (define (make-renderer options render-context sprite-db)
@@ -49,7 +49,7 @@
   #:methods gen:word
   [(define (word-fps word) 60.0)
    (define (word-label word frame-time)
-     (lux-standard-label (options§-title (game-options word)) frame-time))
+     (lux-standard-label (engine-options-title (game-options word)) frame-time))
    (define (word-output word)
      ((game-renderer word)))
    (define (word-event word event)
@@ -62,7 +62,7 @@
    (define (word-tick word)
      word)])
 
-(struct options§ (width height title))
+(struct engine-options (width height title))
 
 (define (engine-start options)
   (call-with-chaos
@@ -70,7 +70,7 @@
     (thunk
       (define sprite-db (prepare-sprite-db))
       (define render-context
-        (with-values options (width height) from options§
+        (with-values options (width height) from engine-options
           (prepare-render-context width height sprite-db)))
       (fiat-lux (game options
                       render-context

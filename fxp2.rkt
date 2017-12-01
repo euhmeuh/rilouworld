@@ -98,5 +98,5 @@
 (display (format "\tMovement: ~a\n" ((player 'movement-state) 'state)))
 (display (format "\tAction: ~a\n" ((player 'action-state) 'state)))
 
-(define options (options§ 512 384 "Rilouworld"))
+(define options (engine-options 512 384 "Rilouworld"))
 (engine-start options)
