@@ -1,6 +1,7 @@
 #lang racket/base
 
 (require
+  racket/class
   racket/format
   "engine.rkt"
   "account.rkt")
@@ -9,7 +10,7 @@
   (let ()
     (local-require "dimensions/manafia.rkt")
     dimension))
-(displayln (~s manafia))
+(displayln (~s (get-field data manafia)))
 
 (define options (engine-options 512 384 "Rilouworld"))
 (define player (account "Euhmeuh" 'golfia))

@@ -10,12 +10,12 @@
   (struct-out engine-options))
 
 (require
+  racket/class
   racket/function
   mode-lambda
   mode-lambda/static
   lux
   lux/chaos/gui
-  lux/chaos/gui/key
   (prefix-in gl: mode-lambda/backend/gl)
   "struct-utils.rkt")
 
@@ -45,7 +45,7 @@
   (thunk
     (render-context (prepare-layer-config options) static-states (dynamic-states))))
 
-(struct game (options render-context sprite-db renderer)
+(struct game (options dimension renderer)
   #:methods gen:word
   [(define (word-fps word) 60.0)
    (define (word-label word frame-time)
@@ -53,12 +53,7 @@
    (define (word-output word)
      ((game-renderer word)))
    (define (word-event word event)
-     (cond
-       [(or (eq? event 'close)
-            (and (key-event? event)
-                 (eq? 'escape (key-event-code event))))
-        #f]
-       [else word]))
+     (send (game-dimension word) handle-event word event))
    (define (word-tick word)
      word)])
 
@@ -73,6 +68,5 @@
         (with-values options (width height) from engine-options
           (prepare-render-context width height sprite-db)))
       (fiat-lux (game options
-                      render-context
-                      sprite-db
+                      dimension
                       (make-renderer options render-context sprite-db))))))
