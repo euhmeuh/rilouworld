@@ -1,8 +1,15 @@
-#lang racket
+#lang racket/base
+
+;;; simple state machine system
+;;; that allows subscribing to events when state changes
+
+(provide
+  ;; make a new transition list
+  make-transitions
+  ;; make a new state machine
+  make-state)
 
 (require "anaphora.rkt")
-
-(provide make-transitions make-state)
 
 (define (make-transitions start . rules)
   (define (try current-state event)
@@ -17,8 +24,8 @@
       (findf handles-this-event?
              (filter from-this-state? rules)))
     (if found-rule
-      (get-new-state found-rule)
-      #f))
+        (get-new-state found-rule)
+        #f))
 
   (define (dispatch m . args)
     (cond

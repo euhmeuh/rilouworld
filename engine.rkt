@@ -1,12 +1,16 @@
-#lang racket
+#lang racket/base
+
+;;; display the graphics on the screen
+;;; and handle inputs
 
 (provide
-  ; open a window and start the main game loop, handling inputs and displaying graphics
+  ;; open a window and start the main game loop, handling inputs and displaying graphics
   engine-start
-  ; engine initial configuration
+  ;; engine initial configuration
   (struct-out options§))
 
 (require
+  racket/function
   mode-lambda
   mode-lambda/static
   lux

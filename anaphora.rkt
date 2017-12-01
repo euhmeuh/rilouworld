@@ -1,6 +1,24 @@
-#lang racket
+#lang racket/base
 
-(provide define-asyntax define-asyntax-rule aif awhen alambda atree)
+;;; provide a Scheme hygienic equivalent of the CL anaphoric macros
+;;; defined in the book Let Over Lambda by Doug Hoyt
+
+(provide
+  ;; create an anaphoric macro
+  define-asyntax
+  ;; create an anaphoric one rule macro
+  define-asyntax-rule
+  ;; anaphoric if that binds "it"
+  aif
+  ;; anaphoric when that binds "it"
+  awhen
+  ;; anaphoric lambda that binds "self"
+  alambda
+  ;; anaphoric tree walking that binds "it"
+  atree)
+
+(require
+  (for-syntax racket/base))
 
 (define-syntax-rule (define-asyntax name (anaphora ...) (pattern template) ...)
   (define-syntax (name stx)
@@ -53,16 +71,16 @@
 ;;        (and (number? it) (even? it))
 ;;        'even-number)
 ;;
-(define-asyntax-rule (atree test result) (it)
+(define-asyntax-rule (atree tree test result) (it)
   (tree-leaves tree
     (lambda (it) test)
     (lambda (it) result)))
 
 (define (tree-leaves tree test result)
-    (if (and (list? tree) (not (null? tree)))
-      (cons
-        (tree-leaves (car tree) test result)
-        (tree-leaves (cdr tree) test result))
-      (if (test tree)
-        (result tree)
-      tree)))
+  (if (and (list? tree) (not (null? tree)))
+    (cons
+      (tree-leaves (car tree) test result)
+      (tree-leaves (cdr tree) test result))
+    (if (test tree)
+      (result tree)
+    tree)))
