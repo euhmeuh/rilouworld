@@ -20,17 +20,32 @@
   "struct-utils.rkt")
 
 (define *nb-of-layers* 8)
+(define *fps* 60.0)
 
-(define (prepare-sprite-db)
+(struct loop (options dimension renderer)
+  #:methods gen:word
+  [(define (word-fps loop) *fps*)
+   (define (word-label loop frame-time)
+     (lux-standard-label (engine-options-title (loop-options loop)) frame-time))
+   (define (word-output loop)
+     ((loop-renderer loop)))
+   (define (word-event loop event)
+     (send (loop-dimension loop) handle-event loop event))
+   (define (word-tick loop)
+     loop)])
+
+(struct engine-options (width height title))
+
+(define (make-database)
   (define sprite-db (make-sprite-db))
   (add-palette!/file sprite-db 'palette (build-path "." "palette.png"))
   (add-sprite!/file sprite-db 'nyancat (build-path "." "nyancat.png") #:palette 'palette)
   (compile-sprite-db sprite-db))
 
-(define (prepare-render-context width height sprite-db)
+(define (make-render-context width height sprite-db)
   (gl:stage-draw/dc sprite-db width height *nb-of-layers*))
 
-(define (prepare-layer-config options)
+(define (make-layer-config options)
   (with-values options (width height) from engine-options
     (vector (layer (/ width 2.) (/ height 2.)))))
 
@@ -43,30 +58,20 @@
                     #:layer 0
                     #:pal-idx (palette-idx sprite-db 'palette)))))
   (thunk
-    (render-context (prepare-layer-config options) static-states (dynamic-states))))
+    (render-context (make-layer-config options) static-states (dynamic-states))))
 
-(struct game (options dimension renderer)
-  #:methods gen:word
-  [(define (word-fps word) 60.0)
-   (define (word-label word frame-time)
-     (lux-standard-label (engine-options-title (game-options word)) frame-time))
-   (define (word-output word)
-     ((game-renderer word)))
-   (define (word-event word event)
-     (send (game-dimension word) handle-event word event))
-   (define (word-tick word)
-     word)])
-
-(struct engine-options (width height title))
+(define (make-loop options dimension account)
+  (define sprite-db
+    (make-database))
+  (define render-context
+    (with-values options (width height) from engine-options
+      (make-render-context width height sprite-db)))
+  (define renderer
+    (make-renderer options render-context sprite-db))
+  (loop options dimension renderer))
 
 (define (engine-start options dimension account)
   (call-with-chaos
     (make-gui #:mode gl:gui-mode)
     (thunk
-      (define sprite-db (prepare-sprite-db))
-      (define render-context
-        (with-values options (width height) from engine-options
-          (prepare-render-context width height sprite-db)))
-      (fiat-lux (game options
-                      dimension
-                      (make-renderer options render-context sprite-db))))))
+      (fiat-lux (make-loop options dimension account)))))

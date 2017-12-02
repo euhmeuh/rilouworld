@@ -21,7 +21,7 @@
       (displayln (format "Key ~s" (key-event-code event)))
       #t)
 
-    (define/public (handle-event word event)
+    (define/public (handle-event game-loop event)
       (cond
        [(or (eq? event 'close)
             (and (key-event? event)
@@ -29,8 +29,8 @@
         #f]
        [(key-event? event)
         (if (emit event)
-            word
+            game-loop
             #f)]
-       [else word]))
+       [else game-loop]))
 
     (super-new)))
