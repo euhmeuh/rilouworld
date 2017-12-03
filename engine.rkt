@@ -17,7 +17,9 @@
   lux
   lux/chaos/gui
   (prefix-in gl: mode-lambda/backend/gl)
-  "struct-utils.rkt")
+  "log-utils.rkt"
+  "struct-utils.rkt"
+  (prefix-in quest: "quest/entities.rkt"))
 
 (define *nb-of-layers* 8)
 (define *fps* 60.0)
@@ -32,14 +34,26 @@
    (define (word-event loop event)
      (send (loop-dimension loop) handle-event loop event))
    (define (word-tick loop)
+     (send (loop-dimension loop) emit 'tick)
      loop)])
 
 (struct engine-options (width height title))
 
-(define (make-database)
+(define (make-database sprites)
   (define sprite-db (make-sprite-db))
   (add-palette!/file sprite-db 'palette (build-path "." "palette.png"))
-  (add-sprite!/file sprite-db 'nyancat (build-path "." "nyancat.png") #:palette 'palette)
+  (for-each
+    (lambda (sprite)
+      (with-values sprite (name path) from quest:sprite
+        (set! path (build-path "." path))
+        (if (file-exists? path)
+          (add-sprite!/file sprite-db
+                            name
+                            path
+                            #:palette 'palette)
+          (warning 'sprite-build
+                   "Could not find file '~a' for sprite '~a'." path name))))
+    sprites)
   (compile-sprite-db sprite-db))
 
 (define (make-render-context width height sprite-db)
@@ -62,7 +76,7 @@
 
 (define (make-loop options dimension account)
   (define sprite-db
-    (make-database))
+    (make-database (get-field sprites dimension)))
   (define render-context
     (with-values options (width height) from engine-options
       (make-render-context width height sprite-db)))

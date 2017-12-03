@@ -1,0 +1,14 @@
+#lang s-exp "../quest/quest.rkt"
+
+(dimension "Nyancat"
+  (sprites
+    (nyancat "nyancat.png" (rect 0 40 40 20))
+    (space-bg "space-bg.png")
+    (star "star.png" (rect 0 0 10 10))
+    (troll "troll.png" (rect 0 0 10 10)))
+  (zone 'space "Space" (rect 0 0 32 24)
+    (scrolling-bg 'space-bg 'left 0.2)
+    (spawner (rect 512 0 16 384)
+             'troll 0.5
+             'star 0.01)
+    (player 'nyancat (pos 10 256))))
