@@ -17,9 +17,9 @@
   lux
   lux/chaos/gui
   (prefix-in gl: mode-lambda/backend/gl)
-  "log-utils.rkt"
-  "struct-utils.rkt"
-  (prefix-in quest: "quest/entities.rkt"))
+  "../utils/log.rkt"
+  "../utils/struct.rkt"
+  (prefix-in quest: "../quest/entities.rkt"))
 
 (define *nb-of-layers* 8)
 (define *fps* 60.0)
@@ -41,11 +41,11 @@
 
 (define (make-database sprites)
   (define sprite-db (make-sprite-db))
-  (add-palette!/file sprite-db 'palette (build-path "." "palette.png"))
+  (add-palette!/file sprite-db 'palette (build-path "." "dimensions" "palette.png"))
   (for-each
     (lambda (sprite)
       (with-values sprite (name path) from quest:sprite
-        (set! path (build-path "." path))
+        (set! path (build-path "." "dimensions" path))
         (if (file-exists? path)
           (add-sprite!/file sprite-db
                             name

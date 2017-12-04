@@ -1,0 +1,17 @@
+#lang s-exp "../langs/quest-lang.rkt"
+
+(dimension "Manafia"
+  (sprites
+    (larva "larva.png")
+    (home-out-001 "home-out-001.png")
+    (sofa-001 "props/sofa-001.png" (rect 0 20 30 20))
+    (lamp-001 "props/lamp-001.png")
+    (desk-001 "props/desk-001.png" (rect 0 20 30 10)))
+  (zone 'golfia "Golfia" (rect 0 0 256 128)
+    (monster-nest 'larva (rect 50 60 20 20) 0.2)
+    (home 'home-out-001 (pos 60 90)
+      (door (rect 10 10 10 40) home-in-001)))
+  (zone-inside 'home-in-001 "Sample home" (size 100 80)
+    (props 'sofa-001 (pos 20 40))
+    (props 'lamp-001 (pos 50 10))
+    (props 'desk-001 (pos 70 40))))

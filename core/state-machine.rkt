@@ -9,7 +9,8 @@
   ;; make a new state machine
   make-state)
 
-(require "anaphora.rkt")
+(require
+  "../utils/anaphora.rkt")
 
 (define (make-transitions start . rules)
   (define (try current-state event)

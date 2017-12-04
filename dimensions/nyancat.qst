@@ -1,4 +1,6 @@
-#lang s-exp "../quest/quest.rkt"
+#lang s-exp "../quest/quest-lang.rkt"
+
+(from nyancat use player)
 
 (dimension "Nyancat"
   (sprites

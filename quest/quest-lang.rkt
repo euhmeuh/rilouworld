@@ -1,12 +1,15 @@
 #lang racket/base
 
+;;; the Quest language is a DSL for writing Rilouworld's dimensions
+
 (provide (except-out (all-from-out racket/base)
                      #%module-begin)
          (rename-out (module-begin #%module-begin))
+         
+         ;; provide the base entities
          (rename-out (make-pos pos))
          (rename-out (make-rect rect))
          (rename-out (make-scrolling-bg scrolling-bg))
-         (rename-out (make-player player))
          (rename-out (make-sprites sprites))
          (rename-out (make-zone zone))
          (rename-out (make-spawner spawner))
@@ -15,13 +18,23 @@
 
 (require
   racket/class
-  lux/chaos/gui/key
+  (for-syntax racket/base)
   "entities.rkt")
 
-(define-syntax-rule (module-begin expr)
-  (#%module-begin
-    (provide dimension)
-    (define dimension expr)))
+(define-for-syntax (package-path name)
+  (path->string (build-path ".." "packages" (format "~a.rkt" (syntax->datum name)))))
+
+(define-syntax (module-begin stx)
+  (syntax-case stx (from use)
+    [(_ (from package use entity ...) ... expr)
+     (with-syntax ([(path ...)
+                    (datum->syntax stx
+                      (map package-path
+                           (syntax->list (syntax/loc stx (package ...)))))])
+       #'(#%module-begin
+           (provide object)
+           (require (only-in path entity ...)) ...
+           (define object expr)))]))
 
 (define (make-pos x y)
   (pos x y))
@@ -32,11 +45,8 @@
 (define (make-scrolling-bg sprite direction speed)
   (scrolling-bg sprite direction speed))
 
-(define (make-player sprite [pos (pos 0 0)])
-  (player sprite pos))
-
-(define (make-dimension name sprites . zones)
-  (make-object dimension% 'name sprites zones))
+(define (make-dimension title sprites . zones)
+  (make-object dimension% 'title sprites zones))
 
 (define-syntax-rule (make-sprites (name path body ...) ...)
   (list (make-sprite 'name path body ...) ...))
@@ -49,21 +59,3 @@
 
 (define (make-spawner rect . objects)
   (spawner rect objects))
-
-(define dimension%
-  (class object%
-    (init-field name sprites zones)
-
-    (define/public (emit event)
-      (when (key-event? event)
-        (displayln (format "Key ~s" (key-event-code event))))
-      #t)
-
-    (define/public (handle-event game-loop event)
-      (cond
-       [(eq? event 'close) #f]
-       [(emit event) game-loop]
-       [else #f]))
-
-    (super-new)))
-
