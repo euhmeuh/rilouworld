@@ -39,12 +39,12 @@
 
 (struct engine-options (width height title))
 
-(define (make-database sprites)
+(define (make-database resources)
   (define sprite-db (make-sprite-db))
   (add-palette!/file sprite-db 'palette (build-path "." "dimensions" "palette.png"))
   (for-each
-    (lambda (sprite)
-      (with-values sprite (name path) from quest:sprite
+    (lambda (resource)
+      (with-values resource (name path) from quest:resource
         (set! path (build-path "." "dimensions" path))
         (if (file-exists? path)
           (add-sprite!/file sprite-db
@@ -52,8 +52,8 @@
                             path
                             #:palette 'palette)
           (warning 'sprite-build
-                   "Could not find file '~a' for sprite '~a'." path name))))
-    sprites)
+                   "Could not find file '~a' for resource '~a'." path name))))
+    resources)
   (compile-sprite-db sprite-db))
 
 (define (make-render-context width height sprite-db)
@@ -63,25 +63,33 @@
   (with-values options (width height) from engine-options
     (vector (layer (/ width 2.) (/ height 2.)))))
 
-(define (make-renderer options render-context sprite-db)
-  (define static-states '())
+(define (make-renderer options render-context sprite-db dimension)
+  (define static-states
+    (thunk
+      (map (lambda (quest-sprite) #f)
+             (send dimension collect-static-sprites))))
   (define dynamic-states
     (thunk
-      (list (sprite 50. 50.
-                    (sprite-idx sprite-db 'nyancat)
-                    #:layer 0
-                    #:pal-idx (palette-idx sprite-db 'palette)))))
+      (map (lambda (quest-sprite)
+             (define pos (quest:sprite-pos quest-sprite))
+             (sprite (quest:pos-x pos) (quest:pos-y pos)
+                     (sprite-idx sprite-db (quest:sprite-resource quest-sprite))
+                     #:layer (quest:sprite-layer quest-sprite)
+                     #:pal-idx (palette-idx sprite-db 'palette)))
+           (send dimension collect-dynamic-sprites))))
   (thunk
-    (render-context (make-layer-config options) static-states (dynamic-states))))
+    (render-context (make-layer-config options)
+                    (static-states)
+                    (dynamic-states))))
 
 (define (make-loop options dimension account)
   (define sprite-db
-    (make-database (get-field sprites dimension)))
+    (make-database (get-field resources dimension)))
   (define render-context
     (with-values options (width height) from engine-options
       (make-render-context width height sprite-db)))
   (define renderer
-    (make-renderer options render-context sprite-db))
+    (make-renderer options render-context sprite-db dimension))
   (loop options dimension renderer))
 
 (define (engine-start options dimension account)

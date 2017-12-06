@@ -10,7 +10,7 @@
          (rename-out (make-pos pos))
          (rename-out (make-rect rect))
          (rename-out (make-scrolling-bg scrolling-bg))
-         (rename-out (make-sprites sprites))
+         (rename-out (make-resources resources))
          (rename-out (make-zone zone))
          (rename-out (make-spawner spawner))
          (rename-out (make-dimension dimension))
@@ -42,17 +42,17 @@
 (define (make-rect x y w h)
   (rect x y w h))
 
-(define (make-scrolling-bg sprite direction speed)
-  (scrolling-bg sprite direction speed))
+(define (make-scrolling-bg resource direction speed)
+  (scrolling-bg resource direction speed))
 
 (define (make-dimension title sprites . zones)
   (make-object dimension% 'title sprites zones))
 
-(define-syntax-rule (make-sprites (name path body ...) ...)
-  (list (make-sprite 'name path body ...) ...))
+(define-syntax-rule (make-resources (name path body ...) ...)
+  (list (make-resource 'name path body ...) ...))
 
-(define (make-sprite name path [hitbox (rect 0 0 0 0)])
-  (sprite name path hitbox))
+(define (make-resource name path [hitbox (rect 0 0 0 0)])
+  (resource name path hitbox))
 
 (define (make-zone name title rect . objects)
   (zone name title rect objects))

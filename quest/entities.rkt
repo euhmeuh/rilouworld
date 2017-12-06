@@ -3,53 +3,116 @@
 ;;; Base structs for the Quest language
 
 (provide
-  gen:entity
-  entity?
-  entity-emit
+  ;; interface that tells the entity can react to events
+  gen:receiver
+  receiver?
+  receiver-emit
+  ;; utility procedure that emits an event to all given entities
+  emit-to-all
+  ;; interface that tells the entity can display itself as a sprite
+  gen:sprite
+  sprite?
+  sprite-pos
+  sprite-resource
+  sprite-layer
+  sprite-static?
+  ;; interface for entities that have gen:sprite children
+  gen:sprite-holder
+  sprite-holder?
+  sprite-holder-children
+  ;; utility recursive function that searches for sprites and sprites-holders
+  ;; and returns a flatten list of sprites
+  collect-sprites
+  ;; base structs used in quest files
   (struct-out pos)
   (struct-out rect)
-  (struct-out sprite)
+  (struct-out resource)
   (struct-out zone)
   (struct-out spawner)
   (struct-out scrolling-bg)
+  ;; base entity that holds a full world
   dimension%
+  ;; give access to keyboard handling procedures
   (all-from-out lux/chaos/gui/key))
 
 (require
   racket/generic
   racket/class
   racket/function
+  racket/contract
+  racket/list
   lux/chaos/gui/key)
 
-(define-generics entity
-  (entity-emit entity event)
+(define-generics receiver
+  (receiver-emit receiver event)
   #:fallbacks
-  [(define (entity-emit entity event)
+  [(define (receiver-emit receiver event)
      #t)])
+
+(define (emit-to-all event entities)
+  (for-each (curryr receiver-emit event)
+            (filter receiver? entities)))
+
+(define-generics sprite
+  (sprite-pos sprite)
+  (sprite-resource sprite)
+  (sprite-layer sprite)
+  (sprite-static? sprite)
+  #:fallbacks
+  [(define (sprite-pos sprite)
+     (pos 0 0))
+   (define (sprite-resource sprite)
+     #f)
+   (define (sprite-layer sprite)
+     0)
+   (define (sprite-static? sprite)
+     #f)])
+
+(define-generics sprite-holder
+  (sprite-holder-children sprite-holder))
+
+(define (collect-sprites result l)
+  (cond
+    [(empty? l) result]
+    [(sprite-holder? (car l))
+     (collect-sprites (cons (sprite-holder-children (car l))
+                            result)
+                      (cdr l))]
+    [(sprite? (car l))
+     (collect-sprites (cons (car l) result)
+                      (cdr l))]
+    [else
+     (collect-sprites result (cdr l))]))
 
 (struct pos (x y) #:mutable)
 (struct rect pos (w h) #:mutable)
-(struct sprite (name path hitbox))
+(struct resource (name path hitbox))
 
 (struct spawner (rect objects)
-  #:methods gen:entity [])
+  #:methods gen:receiver [])
 
-(struct scrolling-bg (sprite direction speed)
-  #:methods gen:entity [])
+(struct scrolling-bg (resource direction speed)
+  #:methods gen:receiver []
+  #:methods gen:sprite
+  [(define (sprite-static? self) #t)
+   (define (sprite-resource self) (scrolling-bg-resource self))])
 
 (struct zone (name title rect objects)
-  #:methods gen:entity
-  [(define/generic super-emit entity-emit)
-   (define (entity-emit self event)
-     (for-each (curryr super-emit event) (zone-objects self)))])
+  #:methods gen:receiver
+  [(define (receiver-emit self event)
+     (emit-to-all event (zone-objects self)))]
+  #:methods gen:sprite-holder
+  [(define (sprite-holder-children self)
+     (collect-sprites '() (zone-objects self)))])
 
 (define dimension%
   (class object%
-    (init-field title sprites zones)
-    (field [current-zone (car zones)])
+    (init-field title resources zones)
+    (field [current-zone (car zones)]
+           [current-sprites (sprite-holder-children current-zone)])
 
     (define/public (emit event)
-      (entity-emit current-zone event)
+      (receiver-emit current-zone event)
       #t)
 
     (define/public (handle-event game-loop event)
@@ -57,5 +120,11 @@
        [(eq? event 'close) #f]
        [(emit event) game-loop]
        [else #f]))
+
+    (define/public (collect-static-sprites)
+      (filter sprite-static? current-sprites))
+
+    (define/public (collect-dynamic-sprites)
+      (filter (not/c sprite-static?) current-sprites))
 
     (super-new)))
