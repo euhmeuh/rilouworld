@@ -26,16 +26,16 @@
 
 (struct loop (options dimension renderer)
   #:methods gen:word
-  [(define (word-fps loop) *fps*)
-   (define (word-label loop frame-time)
-     (lux-standard-label (engine-options-title (loop-options loop)) frame-time))
-   (define (word-output loop)
-     ((loop-renderer loop)))
-   (define (word-event loop event)
-     (send (loop-dimension loop) handle-event loop event))
-   (define (word-tick loop)
-     (send (loop-dimension loop) emit 'tick)
-     loop)])
+  [(define (word-fps self) *fps*)
+   (define (word-label self frame-time)
+     (lux-standard-label (engine-options-title (loop-options self)) frame-time))
+   (define (word-output self)
+     ((loop-renderer self)))
+   (define (word-event self event)
+     (send (loop-dimension self) handle-event self event))
+   (define (word-tick self)
+     (send (loop-dimension self) emit 'tick)
+     self)])
 
 (struct engine-options (width height title))
 
