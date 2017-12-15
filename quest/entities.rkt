@@ -29,7 +29,10 @@
   (struct-out resource)
   (struct-out zone)
   (struct-out spawner)
+  (struct-out spawn-info)
+  (struct-out simple-sprite)
   (struct-out scrolling-bg)
+  (struct-out particle)
   ;; base entity that holds a full world
   dimension%
   ;; give access to keyboard handling procedures
@@ -89,14 +92,23 @@
 (struct rect pos (w h) #:mutable)
 (struct resource (name path hitbox))
 
-(struct spawner (rect entities)
+(struct simple-sprite (resource pos)
+  #:methods gen:sprite
+  [(define (sprite-pos self) (simple-sprite-pos self))
+   (define (sprite-resource self) (simple-sprite-resource self))])
+
+(struct spawner (rect spawn-infos)
   #:methods gen:receiver [])
+
+(struct spawn-info (freq constructor args))
 
 (struct scrolling-bg (resource direction speed)
   #:methods gen:receiver []
   #:methods gen:sprite
   [(define (sprite-static? self) #t)
    (define (sprite-resource self) (scrolling-bg-resource self))])
+
+(struct particle simple-sprite (direction lifetime))
 
 (struct zone (name title rect entities)
   #:methods gen:receiver

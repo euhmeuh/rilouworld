@@ -10,15 +10,17 @@
          (rename-out (make-pos pos))
          (rename-out (make-rect rect))
          (rename-out (make-scrolling-bg scrolling-bg))
+         (rename-out (make-spawner spawner))
+         (rename-out (make-particle particle))
          (rename-out (make-resources resources))
          (rename-out (make-zone zone))
-         (rename-out (make-spawner spawner))
          (rename-out (make-dimension dimension))
          )
 
 (require
   racket/class
   (for-syntax racket/base)
+  "../utils/anaphora.rkt"
   "entities.rkt")
 
 (define-for-syntax (package-path name)
@@ -45,8 +47,12 @@
 (define (make-scrolling-bg resource direction speed)
   (scrolling-bg resource direction speed))
 
-(define (make-dimension title sprites . zones)
-  (make-object dimension% 'title sprites zones))
+(define-asyntax-rule (make-spawner rect (freq constructor arg ...) ...) (<pos>)
+  (let ([<pos> '<pos>])
+    (spawner rect (list (spawn-info freq constructor (list arg ...)) ...))))
+
+(define (make-particle resource pos direction lifetime)
+  (particle resource pos direction lifetime))
 
 (define-syntax-rule (make-resources (name path body ...) ...)
   (list (make-resource 'name path body ...) ...))
@@ -57,5 +63,5 @@
 (define (make-zone name title rect . entities)
   (zone name title rect entities))
 
-(define (make-spawner rect . entities)
-  (spawner rect entities))
+(define (make-dimension title sprites . zones)
+  (make-object dimension% 'title sprites zones))

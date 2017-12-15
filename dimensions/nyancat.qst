@@ -1,16 +1,19 @@
 #lang s-exp "../quest/quest-lang.rkt"
 
-(from nyancat use player)
+(from nyancat use player troll star)
 
 (dimension "Nyancat"
   (resources
     (nyancat "nyancat.png" (rect 0 40 40 20))
     (space-bg "space-bg.png")
+    (bg-star "bg-star.png")
     (star "star.png" (rect 0 0 10 10))
     (troll "troll.png" (rect 0 0 10 10)))
   (zone 'space "Space" (rect 0 0 32 24)
     (scrolling-bg 'space-bg 'left 0.2)
+    (spawner (rect 0 0 512 384)
+             (.2 particle 'bg-star <pos> 'left .30))
     (spawner (rect 512 0 16 384)
-             'troll 0.5
-             'star 0.01)
+             (.5 troll 'troll <pos>)
+             (.01 star 'star <pos>))
     (player 'nyancat (pos 50. 256.))))
