@@ -54,8 +54,8 @@
 (define (make-resource name path [hitbox (rect 0 0 0 0)])
   (resource name path hitbox))
 
-(define (make-zone name title rect . objects)
-  (zone name title rect objects))
+(define (make-zone name title rect . entities)
+  (zone name title rect entities))
 
-(define (make-spawner rect . objects)
-  (spawner rect objects))
+(define (make-spawner rect . entities)
+  (spawner rect entities))

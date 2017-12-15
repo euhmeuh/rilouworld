@@ -71,24 +71,25 @@
 (define-generics sprite-holder
   (sprite-holder-children sprite-holder))
 
-(define (collect-sprites result l)
+;; recursively find sprites in a list of entities
+(define (collect-sprites result entities)
   (cond
-    [(empty? l) result]
-    [(sprite-holder? (car l))
-     (collect-sprites (cons (sprite-holder-children (car l))
+    [(empty? entities) result]
+    [(sprite-holder? (car entities))
+     (collect-sprites (cons (sprite-holder-children (car entities))
                             result)
-                      (cdr l))]
-    [(sprite? (car l))
-     (collect-sprites (cons (car l) result)
-                      (cdr l))]
+                      (cdr entities))]
+    [(sprite? (car entities))
+     (collect-sprites (cons (car entities) result)
+                      (cdr entities))]
     [else
-     (collect-sprites result (cdr l))]))
+     (collect-sprites result (cdr entities))]))
 
 (struct pos (x y) #:mutable)
 (struct rect pos (w h) #:mutable)
 (struct resource (name path hitbox))
 
-(struct spawner (rect objects)
+(struct spawner (rect entities)
   #:methods gen:receiver [])
 
 (struct scrolling-bg (resource direction speed)
@@ -97,13 +98,13 @@
   [(define (sprite-static? self) #t)
    (define (sprite-resource self) (scrolling-bg-resource self))])
 
-(struct zone (name title rect objects)
+(struct zone (name title rect entities)
   #:methods gen:receiver
   [(define (receiver-emit self event)
-     (emit-to-all event (zone-objects self)))]
+     (emit-to-all event (zone-entities self)))]
   #:methods gen:sprite-holder
   [(define (sprite-holder-children self)
-     (collect-sprites '() (zone-objects self)))])
+     (collect-sprites '() (zone-entities self)))])
 
 (define dimension%
   (class object%

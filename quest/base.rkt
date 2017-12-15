@@ -1,6 +1,6 @@
 #lang racket/base
 
-;;; Basic procedures to manipulate quest objects
+;;; Basic procedures to manipulate quest entities
 
 (provide
   load-quest)

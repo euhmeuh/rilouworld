@@ -23,7 +23,7 @@
 (define (database key)
   (cdr (assq key *database*)))
 
-(define (find-object predicate lst)
+(define (find-entity predicate lst)
   (findf
     (lambda (obj)
       (let [(field (first predicate))
@@ -50,7 +50,7 @@
 
 (define (dimension req (name #f))
   (serialize (if name
-                 (find-object `(name is ,name) (database 'dimensions))
+                 (find-entity `(name is ,name) (database 'dimensions))
                  (database 'dimensions))))
 
 (define (player req)
