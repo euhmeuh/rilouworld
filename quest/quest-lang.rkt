@@ -8,11 +8,14 @@
          
          ;; provide the base entities
          (rename-out (make-pos pos))
+         (rename-out (make-size size))
          (rename-out (make-rect rect))
          (rename-out (make-scrolling-bg scrolling-bg))
          (rename-out (make-spawner spawner))
          (rename-out (make-particle particle))
          (rename-out (make-resources resources))
+         (rename-out (make-image image))
+         (rename-out (make-animation animation))
          (rename-out (make-zone zone))
          (rename-out (make-dimension dimension))
          )
@@ -41,6 +44,9 @@
 (define (make-pos x y)
   (pos x y))
 
+(define (make-size x y)
+  (size x y))
+
 (define (make-rect x y w h)
   (rect x y w h))
 
@@ -54,11 +60,14 @@
 (define (make-particle resource pos direction lifetime)
   (particle resource pos direction lifetime))
 
-(define-syntax-rule (make-resources (name path body ...) ...)
-  (list (make-resource 'name path body ...) ...))
+(define-syntax-rule (make-resources resource ...)
+  (list resource ...))
 
-(define (make-resource name path [hitbox (rect 0 0 0 0)])
-  (resource name path hitbox))
+(define (make-image name path [hitbox (rect 0 0 0 0)])
+  (image name path hitbox))
+
+(define (make-animation name path size frames)
+  (animation name path size frames))
 
 (define (make-zone name title rect . entities)
   (zone name title rect entities))

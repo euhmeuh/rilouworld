@@ -14,6 +14,7 @@
   sprite?
   sprite-pos
   sprite-resource
+  set-sprite-resource!
   sprite-layer
   sprite-static?
   ;; interface for entities that have gen:sprite children
@@ -25,8 +26,11 @@
   collect-sprites
   ;; base structs used in quest files
   (struct-out pos)
+  (struct-out size)
   (struct-out rect)
   (struct-out resource)
+  (struct-out image)
+  (struct-out animation)
   (struct-out zone)
   (struct-out spawner)
   (struct-out spawn-info)
@@ -44,7 +48,9 @@
   racket/function
   racket/contract
   racket/list
-  lux/chaos/gui/key)
+  lux/chaos/gui/key
+  "../utils/struct.rkt"
+  "../utils/anaphora.rkt")
 
 (define-generics receiver
   (receiver-emit receiver event)
@@ -59,6 +65,7 @@
 (define-generics sprite
   (sprite-pos sprite)
   (sprite-resource sprite)
+  (set-sprite-resource! sprite resource)
   (sprite-layer sprite)
   (sprite-static? sprite)
   #:fallbacks
@@ -66,6 +73,8 @@
      (pos 0 0))
    (define (sprite-resource sprite)
      #f)
+   (define (set-sprite-resource! sprite resource)
+     (void))
    (define (sprite-layer sprite)
      0)
    (define (sprite-static? sprite)
@@ -89,24 +98,34 @@
      (collect-sprites result (cdr entities))]))
 
 (struct pos (x y) #:mutable)
+(struct size pos ())
 (struct rect pos (w h) #:mutable)
-(struct resource (name path hitbox))
+(struct resource (name path))
+(struct image resource (hitbox))
+(struct animation resource (size frames))
 
-(struct simple-sprite (resource pos)
+(struct simple-sprite ([resource #:mutable] pos)
   #:methods gen:sprite
-  [(define (sprite-pos self) (simple-sprite-pos self))
-   (define (sprite-resource self) (simple-sprite-resource self))])
+  [(define (sprite-pos self)
+     (simple-sprite-pos self))
+   (define (sprite-resource self)
+     (simple-sprite-resource self))
+   (define (set-sprite-resource! self resource)
+     (set-simple-sprite-resource! self resource))])
 
 (struct spawner (rect spawn-infos)
   #:methods gen:receiver [])
 
 (struct spawn-info (freq constructor args))
 
-(struct scrolling-bg (resource direction speed)
+(struct scrolling-bg ([resource #:mutable] direction speed)
   #:methods gen:receiver []
   #:methods gen:sprite
   [(define (sprite-static? self) #t)
-   (define (sprite-resource self) (scrolling-bg-resource self))])
+   (define (sprite-resource self)
+     (scrolling-bg-resource self))
+   (define (set-sprite-resource! self resource)
+     (set-scrolling-bg-resource! self resource))])
 
 (struct particle simple-sprite (direction lifetime))
 
@@ -122,7 +141,7 @@
   (class object%
     (init-field title resources zones)
     (field [current-zone (car zones)]
-           [current-sprites (sprite-holder-children current-zone)])
+           [current-sprites (initialize-sprites! current-zone resources)])
 
     (define/public (emit event)
       (receiver-emit current-zone event)
@@ -141,3 +160,21 @@
       (filter (not/c sprite-static?) current-sprites))
 
     (super-new)))
+
+(define (initialize-sprites! zone resources)
+  (define sprites (sprite-holder-children zone))
+  (for-each
+    (lambda (the-sprite)
+      (with-values the-sprite (resource) from sprite
+        (when (symbol? resource)
+          (aif (get-resource-by-name resource resources)
+               (set-sprite-resource! the-sprite it)
+               (error 'unknown-resource
+                      (format "Could not find any resource with the name '~a'." resource))))))
+    sprites)
+  sprites)
+
+(define (get-resource-by-name name resources)
+  (findf (lambda (resource)
+           (eq? name (resource-name resource)))
+         resources))

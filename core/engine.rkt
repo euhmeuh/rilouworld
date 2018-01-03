@@ -23,6 +23,7 @@
 
 (define *nb-of-layers* 8)
 (define *fps* 60.0)
+(define current-frame (make-parameter 0))
 
 (struct loop (options dimension renderer)
   #:methods gen:word
@@ -35,6 +36,7 @@
      (send (loop-dimension self) handle-event self event))
    (define (word-tick self)
      (send (loop-dimension self) emit 'tick)
+     (current-frame (add1 (current-frame)))
      self)])
 
 (struct engine-options (width height title))
@@ -66,21 +68,26 @@
 (define (make-renderer options render-context sprite-db dimension)
   (define static-states
     (thunk
-      (map (lambda (quest-sprite) #f)
-             (send dimension collect-static-sprites))))
+      (map (curryr render-static-sprite sprite-db)
+           (send dimension collect-static-sprites))))
   (define dynamic-states
     (thunk
-      (map (lambda (quest-sprite)
-             (define pos (quest:sprite-pos quest-sprite))
-             (sprite (quest:pos-x pos) (quest:pos-y pos)
-                     (sprite-idx sprite-db (quest:sprite-resource quest-sprite))
-                     #:layer (quest:sprite-layer quest-sprite)
-                     #:pal-idx (palette-idx sprite-db 'palette)))
+      (map (curryr render-sprite sprite-db)
            (send dimension collect-dynamic-sprites))))
   (thunk
     (render-context (make-layer-config options)
                     (static-states)
                     (dynamic-states))))
+
+(define (render-sprite the-sprite sprite-db)
+  (with-values the-sprite (pos resource layer) from quest:sprite
+    (sprite (quest:pos-x pos) (quest:pos-y pos)
+            (sprite-idx sprite-db (quest:resource-name resource))
+            #:layer layer
+            #:pal-idx (palette-idx sprite-db 'palette))))
+
+(define (render-static-sprite sprite sprite-db)
+  #f)
 
 (define (make-loop options dimension account)
   (define sprite-db
