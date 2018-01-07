@@ -69,11 +69,11 @@
 
 (define (handle-animation resource sprite-db)
   (with-values resource (name path) from quest:resource
-    (with-values resource (size frames) from quest:animation
+    (with-values resource (size) from quest:animation
       (set! path (build-path "." "dimensions" path))
       (aif (open-bitmap path)
-           (for ([bitmap (cut-image-in-parts it size frames)]
-                 [index (in-naturals 0)])
+           (for ([bitmap (cut-image-in-parts it size)]
+                 [index (in-naturals)])
              (add-sprite!/bm sprite-db
                              (sprite-ref name index)
                              (thunk bitmap)
@@ -86,8 +86,30 @@
   (and (file-exists? path)
        (read-bitmap path)))
 
-(define (cut-image-in-parts bitmap size frames)
-  (list bitmap))
+(define (cut-image-in-parts bitmap size)
+  (local-require racket/draw)
+  (with-values size (w h) from quest:size
+    (define-values (bm-w bm-h) (bitmap-size bitmap))
+    (define-values (tiles-w tiles-h) (values (quotient bm-w w)
+                                             (quotient bm-h h)))
+    (for/list ([x (in-range 0 (* tiles-w tiles-h))])
+      (cut-image bitmap
+                 (* (remainder x tiles-w) w)
+                 (* (quotient x tiles-w) h)
+                 w
+                 h))))
+
+(define (bitmap-size bitmap)
+  (local-require racket/draw)
+  (values (send bitmap get-width)
+          (send bitmap get-height)))
+
+(define (cut-image bitmap x y w h)
+  (local-require racket/draw)
+  (let* ([result (make-bitmap w h)]
+         [dc (new bitmap-dc% [bitmap result])])
+    (send dc draw-bitmap-section bitmap 0 0 x y w h)
+    result))
 
 (define (make-render-context width height sprite-db)
   (gl:stage-draw/dc sprite-db width height *nb-of-layers*))
@@ -122,9 +144,13 @@
 
 (define (find-current-sprite resource)
   (cond
-    [(quest:animation? resource)
-     (sprite-ref (quest:resource-name resource) 0)]
+    [(quest:animation? resource) (current-animation-sprite resource)]
     [else (quest:resource-name resource)]))
+
+(define (current-animation-sprite resource)
+  (with-values resource (frames) from quest:animation
+    (define frame (quotient (remainder (current-frame) 24) 4))
+    (sprite-ref (quest:resource-name resource) frame)))
 
 (define (make-loop options dimension account)
   (define sprite-db

@@ -1,8 +1,14 @@
 #lang racket/base
 
 (provide
-  ;; log a warning
+  ;; output a value and returns it unchanged
+  dvalue
+    ;; log a warning
   warning)
+
+(define (dvalue value)
+  (displayln value)
+  value)
 
 (define (warning sym message . values)
   (displayln (format

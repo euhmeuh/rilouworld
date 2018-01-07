@@ -98,7 +98,7 @@
      (collect-sprites result (cdr entities))]))
 
 (struct pos (x y) #:mutable)
-(struct size pos ())
+(struct size (w h) #:mutable)
 (struct rect pos (w h) #:mutable)
 (struct resource (name path))
 (struct image resource (hitbox))
