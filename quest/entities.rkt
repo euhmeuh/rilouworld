@@ -70,7 +70,7 @@
   (sprite-static? sprite)
   #:fallbacks
   [(define (sprite-pos sprite)
-     (pos 0 0))
+     (pos 0. 0.))
    (define (sprite-image sprite)
      #f)
    (define (set-sprite-image! sprite image)

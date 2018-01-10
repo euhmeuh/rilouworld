@@ -16,4 +16,5 @@
     (spawner (rect 512 0 16 384)
              (.5 troll 'troll <pos>)
              (.01 star 'star <pos>))
+    (star 'star (pos 100. 100.))
     (player 'nyancat (pos 50. 256.))))

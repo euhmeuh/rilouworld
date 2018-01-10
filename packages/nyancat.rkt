@@ -26,15 +26,15 @@
          ['down (set-pos-y! pos (+ y speed))]
          [_ #t])))])
 
-(define (make-player resource-name [pos (pos 0 0)])
-  (player resource-name pos))
+(define (make-player image [pos (pos 0 0)])
+  (player image pos))
 
 (struct troll simple-sprite ())
 
-(define (make-troll resource-name pos)
-  (troll resource-name pos))
+(define (make-troll image pos)
+  (troll image pos))
 
 (struct star simple-sprite ())
 
-(define (make-star resource-name pos)
-  (star resource-name pos))
+(define (make-star image pos)
+  (star image pos))
