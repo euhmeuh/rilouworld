@@ -135,21 +135,28 @@
 (define (render-sprite the-sprite sprite-db)
   (with-values the-sprite (pos resource layer) from quest:sprite
     (sprite (quest:pos-x pos) (quest:pos-y pos)
-            (sprite-idx sprite-db (find-current-sprite resource))
+            (sprite-idx sprite-db (get-and-update-sprite! resource))
             #:layer layer
             #:pal-idx (palette-idx sprite-db 'palette))))
 
 (define (render-static-sprite sprite sprite-db)
   #f)
 
-(define (find-current-sprite resource)
+(define (get-and-update-sprite! resource)
   (cond
-    [(quest:animation? resource) (current-animation-sprite resource)]
-    [else (quest:resource-name resource)]))
+    [(quest:animation? resource)
+     (get-and-update-animation! resource)]
+    [else
+     (quest:resource-name resource)]))
 
-(define (current-animation-sprite resource)
-  (with-values resource (frames) from quest:animation
-    (define frame (quotient (remainder (current-frame) 24) 4))
+(define (get-and-update-animation! resource)
+  (with-values resource (frames length last-change frame) from quest:animation
+    (define now (current-frame))
+    (when (>= (- now last-change)
+              (list-ref frames frame))
+      (set! frame (remainder (add1 frame) length))
+      (quest:set-animation-frame! resource frame)
+      (quest:set-animation-last-change! resource now))
     (sprite-ref (quest:resource-name resource) frame)))
 
 (define (make-loop options dimension account)

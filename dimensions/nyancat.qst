@@ -4,7 +4,7 @@
 
 (dimension "Nyancat"
   (resources
-    (animation 'nyancat "nyancat.png" (size 34 21) '(.2 .2 .2 .2 .2 .2))
+    (animation 'nyancat "nyancat.png" (size 34 21) '(4 4 4 4 4 4))
     (image 'space-bg "space-bg.png")
     (image 'bg-star "bg-star.png")
     (image 'star "star.png" (rect 0 0 10 10))

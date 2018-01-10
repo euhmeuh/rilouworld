@@ -67,7 +67,7 @@
   (image name path hitbox))
 
 (define (make-animation name path size frames)
-  (animation name path size frames))
+  (animation name path size frames (length frames) 0 0))
 
 (define (make-zone name title rect . entities)
   (zone name title rect entities))

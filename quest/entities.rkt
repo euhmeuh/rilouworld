@@ -102,7 +102,7 @@
 (struct rect pos (w h) #:mutable)
 (struct resource (name path))
 (struct image resource (hitbox))
-(struct animation resource (size frames))
+(struct animation resource (size frames length [frame #:mutable] [last-change #:mutable]))
 
 (struct simple-sprite ([resource #:mutable] pos)
   #:methods gen:sprite
