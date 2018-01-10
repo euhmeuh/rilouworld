@@ -129,7 +129,7 @@
 
 (struct particle simple-sprite (direction lifetime))
 
-(struct zone (name title rect entities)
+(struct zone (name title size entities)
   #:methods gen:receiver
   [(define (receiver-emit self event)
      (emit-to-all event (zone-entities self)))]

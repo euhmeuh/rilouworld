@@ -69,8 +69,8 @@
 (define (make-animation name path size frames [hitbox (rect 0 0 0 0)])
   (animation name path hitbox size frames (length frames) 0 0))
 
-(define (make-zone name title rect . entities)
-  (zone name title rect entities))
+(define (make-zone name title size . entities)
+  (zone name title size entities))
 
 (define (make-dimension title sprites . zones)
   (make-object dimension% 'title sprites zones))
