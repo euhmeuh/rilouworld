@@ -13,8 +13,8 @@
   gen:sprite
   sprite?
   sprite-pos
-  sprite-resource
-  set-sprite-resource!
+  sprite-image
+  set-sprite-image!
   sprite-layer
   sprite-static?
   ;; interface for entities that have gen:sprite children
@@ -64,16 +64,16 @@
 
 (define-generics sprite
   (sprite-pos sprite)
-  (sprite-resource sprite)
-  (set-sprite-resource! sprite resource)
+  (sprite-image sprite)
+  (set-sprite-image! sprite image)
   (sprite-layer sprite)
   (sprite-static? sprite)
   #:fallbacks
   [(define (sprite-pos sprite)
      (pos 0 0))
-   (define (sprite-resource sprite)
+   (define (sprite-image sprite)
      #f)
-   (define (set-sprite-resource! sprite resource)
+   (define (set-sprite-image! sprite image)
      (void))
    (define (sprite-layer sprite)
      0)
@@ -102,30 +102,30 @@
 (struct rect pos (w h) #:mutable)
 (struct resource (name path))
 (struct image resource (hitbox))
-(struct animation resource (size frames length [frame #:mutable] [last-change #:mutable]))
+(struct animation image (size frames length [frame #:mutable] [last-change #:mutable]))
 
-(struct simple-sprite ([resource #:mutable] pos)
+(struct simple-sprite ([image #:mutable] pos)
   #:methods gen:sprite
   [(define (sprite-pos self)
      (simple-sprite-pos self))
-   (define (sprite-resource self)
-     (simple-sprite-resource self))
-   (define (set-sprite-resource! self resource)
-     (set-simple-sprite-resource! self resource))])
+   (define (sprite-image self)
+     (simple-sprite-image self))
+   (define (set-sprite-image! self image)
+     (set-simple-sprite-image! self image))])
 
 (struct spawner (rect spawn-infos)
   #:methods gen:receiver [])
 
 (struct spawn-info (freq constructor args))
 
-(struct scrolling-bg ([resource #:mutable] direction speed)
+(struct scrolling-bg ([image #:mutable] direction speed)
   #:methods gen:receiver []
   #:methods gen:sprite
   [(define (sprite-static? self) #t)
-   (define (sprite-resource self)
-     (scrolling-bg-resource self))
-   (define (set-sprite-resource! self resource)
-     (set-scrolling-bg-resource! self resource))])
+   (define (sprite-image self)
+     (scrolling-bg-image self))
+   (define (set-sprite-image! self image)
+     (set-scrolling-bg-image! self image))])
 
 (struct particle simple-sprite (direction lifetime))
 
@@ -165,12 +165,12 @@
   (define sprites (sprite-holder-children zone))
   (for-each
     (lambda (the-sprite)
-      (with-values the-sprite (resource) from sprite
-        (when (symbol? resource)
-          (aif (get-resource-by-name resource resources)
-               (set-sprite-resource! the-sprite it)
-               (error 'unknown-resource
-                      (format "Could not find any resource with the name '~a'." resource))))))
+      (with-values the-sprite (image) from sprite
+        (when (symbol? image)
+          (aif (get-resource-by-name image resources)
+               (set-sprite-image! the-sprite it)
+               (error 'unknown-image
+                      (format "Could not find any image with the name '~a'." image))))))
     sprites)
   sprites)
 

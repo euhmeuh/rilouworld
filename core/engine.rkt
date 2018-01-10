@@ -52,12 +52,13 @@
     (lambda (resource)
       (cond
         [(quest:animation? resource) (handle-animation resource sprite-db)]
-        [else (handle-resource resource sprite-db)]))
+        [(quest:image? resource) (handle-image resource sprite-db)]
+        [else (void)]))
     resources)
   (compile-sprite-db sprite-db))
 
-(define (handle-resource resource sprite-db)
-  (with-values resource (name path) from quest:resource
+(define (handle-image image sprite-db)
+  (with-values image (name path) from quest:resource
     (set! path (build-path "." "dimensions" path))
     (if (file-exists? path)
         (add-sprite!/file sprite-db
@@ -65,11 +66,11 @@
                           path
                           #:palette 'palette)
         (warning 'sprite-build
-                 "Could not find file '~a' for resource '~a'." path name))))
+                 "Could not find file '~a' for image '~a'." path name))))
 
-(define (handle-animation resource sprite-db)
-  (with-values resource (name path) from quest:resource
-    (with-values resource (size) from quest:animation
+(define (handle-animation animation sprite-db)
+  (with-values animation (name path) from quest:resource
+    (with-values animation (size) from quest:animation
       (set! path (build-path "." "dimensions" path))
       (aif (open-bitmap path)
            (for ([bitmap (cut-image-in-parts it size)]
@@ -79,7 +80,7 @@
                              (thunk bitmap)
                              #:palette 'palette))
            (warning 'sprite-build
-                    "Could not find file '~a' for resource '~a'." path name)))))
+                    "Could not find file '~a' for animation '~a'." path name)))))
 
 (define (open-bitmap path)
   (local-require racket/draw)
@@ -133,31 +134,31 @@
                     (dynamic-states))))
 
 (define (render-sprite the-sprite sprite-db)
-  (with-values the-sprite (pos resource layer) from quest:sprite
+  (with-values the-sprite (pos image layer) from quest:sprite
     (sprite (quest:pos-x pos) (quest:pos-y pos)
-            (sprite-idx sprite-db (get-and-update-sprite! resource))
+            (sprite-idx sprite-db (get-and-update-sprite! image))
             #:layer layer
             #:pal-idx (palette-idx sprite-db 'palette))))
 
 (define (render-static-sprite sprite sprite-db)
   #f)
 
-(define (get-and-update-sprite! resource)
+(define (get-and-update-sprite! image)
   (cond
-    [(quest:animation? resource)
-     (get-and-update-animation! resource)]
+    [(quest:animation? image)
+     (get-and-update-animation! image)]
     [else
-     (quest:resource-name resource)]))
+     (quest:resource-name image)]))
 
-(define (get-and-update-animation! resource)
-  (with-values resource (frames length last-change frame) from quest:animation
+(define (get-and-update-animation! animation)
+  (with-values animation (frames length last-change frame) from quest:animation
     (define now (current-frame))
     (when (>= (- now last-change)
               (list-ref frames frame))
       (set! frame (remainder (add1 frame) length))
-      (quest:set-animation-frame! resource frame)
-      (quest:set-animation-last-change! resource now))
-    (sprite-ref (quest:resource-name resource) frame)))
+      (quest:set-animation-frame! animation frame)
+      (quest:set-animation-last-change! animation now))
+    (sprite-ref (quest:resource-name animation) frame)))
 
 (define (make-loop options dimension account)
   (define sprite-db

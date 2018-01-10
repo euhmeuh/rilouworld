@@ -50,15 +50,15 @@
 (define (make-rect x y w h)
   (rect x y w h))
 
-(define (make-scrolling-bg resource direction speed)
-  (scrolling-bg resource direction speed))
+(define (make-scrolling-bg image direction speed)
+  (scrolling-bg image direction speed))
 
 (define-asyntax-rule (make-spawner rect (freq constructor arg ...) ...) (<pos>)
   (let ([<pos> '<pos>])
     (spawner rect (list (spawn-info freq constructor (list arg ...)) ...))))
 
-(define (make-particle resource pos direction lifetime)
-  (particle resource pos direction lifetime))
+(define (make-particle image pos direction lifetime)
+  (particle image pos direction lifetime))
 
 (define-syntax-rule (make-resources resource ...)
   (list resource ...))
@@ -66,8 +66,8 @@
 (define (make-image name path [hitbox (rect 0 0 0 0)])
   (image name path hitbox))
 
-(define (make-animation name path size frames)
-  (animation name path size frames (length frames) 0 0))
+(define (make-animation name path size frames [hitbox (rect 0 0 0 0)])
+  (animation name path hitbox size frames (length frames) 0 0))
 
 (define (make-zone name title rect . entities)
   (zone name title rect entities))
