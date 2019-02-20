@@ -1,14 +1,14 @@
-#lang s-exp "../quest/quest-lang.rkt"
+#lang s-exp rilouworld/quest/quest-lang
 
 (from nyancat use player troll star)
 
-(dimension "Nyancat"
+(world "Nyancat"
   (resources
-    (animation 'nyancat "nyancat.png" (size 34 21) '(4 4 4 4 4 4))
-    (image 'space-bg "space-bg.png")
-    (image 'bg-star "bg-star.png")
-    (image 'star "star.png" (rect 0 0 10 10))
-    (image 'troll "troll.png" (rect 0 0 10 10)))
+    (animation 'nyancat "nyancat/nyancat.png" (size 34 21) '(4 4 4 4 4 4))
+    (image 'space-bg "nyancat/space-bg.png")
+    (image 'bg-star "nyancat/bg-star.png")
+    (image 'star "nyancat/star.png" (rect 0 0 10 10))
+    (image 'troll "nyancat/troll.png" (rect 0 0 10 10)))
   (zone 'space "Space" (size 32 24)
     (scrolling-bg 'space-bg 'left 0.2)
     (spawner (rect 0 0 512 384)

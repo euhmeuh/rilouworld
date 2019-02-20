@@ -1,0 +1,8 @@
+#lang rilouworld/quest
+
+(zone
+  (name "Elfia")
+  (map "elfia.map")
+  (type outside)
+  (rectangles)
+  (actors))

@@ -1,0 +1,96 @@
+#lang rilouworld/quest
+
+(from fxp2 use home door)
+
+(world
+  (name "Manafia")
+  (id "a61691e7-c6ab-4be7-86ed-89c3a7b2c9fb")
+  (version "0.4")
+
+  (changelog
+    (change (version "0.4") (date "2019-02-20T16:10:00Z") (breaking) "Breaking change: Dimensions are renamed Worlds!")
+    (change (version "0.3") (date "2017-06-21T23:00:48Z") (breaking) "Breaking change: Your chest inventory will be deleted!")
+    (change (version "0.2") (date "2017-06-05T02:34:05Z") "Added a new zone")
+    (change (version "0.1") (date "2017-04-14T14:01:00Z") "Created the world"))
+
+  (authors
+    (author (section "Design") "EuhMeuh")
+    (author "Master-Pit")
+    (author "T-Dj@-Mort")
+    (author "Head Hunter (aka Apokalypse)"))
+
+  (description "The land created after the big rebalance.")
+
+  (zone-size (w 32) (h 24)) ;; will mess up all map files if changed
+  (zones
+    (-> "elfia.zone") ;; zone fetched by reference
+    (zone ;; inlined zone
+      (name "Golfia")
+      (map "golfia.map")
+      (type outside)
+      (rectangles
+        (rectangle (x 0) (y 0) (w 3) (h 2)))
+      (actors
+        (fxp2:home
+          (model "small-with-one-door")
+          (position (x 32) (y 128))
+          (doors
+            (fxp2:door (model "wooden-home-door")
+                       (target "tilly-home.zone"))))))))
+
+;; primitives
+
+number flag text filepath (list <type>) (symbol <symbols> ...)
+
+;; rilouworld base
+
+(define-quest-object position
+  (x number)
+  (y number))
+
+(define-quest-object size
+  (w number)
+  (h number))
+
+(define-quest-object rectangle
+  (x number)
+  (y number)
+  (w number)
+  (h number))
+
+(define-quest-object change
+  (version text)
+  (date text)
+  (breaking flag)
+  text)
+
+(define-quest-object author
+  (section text #:optional)
+  text)
+
+(define-quest-object zone
+  (name text)
+  (map filepath)
+  (type (symbol outside inside))
+  (rectangles (list rectangle))
+  (actors (list actor)))
+
+(define-quest-object world
+  (name text)
+  (id text)
+  (version text)
+  (changelog (list change))
+  (authors (list author))
+  (description text)
+  (zone-size size)
+  (zones (list zone)))
+
+;; fxp2
+
+(define-quest-actor door
+  (model text)
+  (target filepath))
+
+(define-quest-actor home
+  (model text)
+  (doors (list door)))

@@ -23,7 +23,7 @@ It looks like this (work in progress):
 ```
 #lang rilouworld/quest
 (from nyancat use player troll star)
-(dimension "Nyancat"
+(world "Nyancat"
   (resources
     (animation 'nyancat "nyancat.png" (size 34 21) '(4 4 4 4 4 4))
     (image 'space-bg "space-bg.png")

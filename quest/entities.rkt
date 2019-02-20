@@ -38,7 +38,7 @@
   (struct-out scrolling-bg)
   (struct-out particle)
   ;; base entity that holds a full world
-  dimension%
+  world%
   ;; give access to keyboard handling procedures
   (all-from-out lux/chaos/gui/key))
 
@@ -137,7 +137,7 @@
   [(define (sprite-holder-children self)
      (collect-sprites '() (zone-entities self)))])
 
-(define dimension%
+(define world%
   (class object%
     (init-field title resources zones)
     (field [current-zone (car zones)]

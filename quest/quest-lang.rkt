@@ -1,6 +1,6 @@
 #lang racket/base
 
-;;; the Quest language is a DSL for writing Rilouworld's dimensions
+;;; the Quest language is a DSL for writing Rilouworlds
 
 (provide (except-out (all-from-out racket/base)
                      #%module-begin)
@@ -17,7 +17,7 @@
          (rename-out (make-image image))
          (rename-out (make-animation animation))
          (rename-out (make-zone zone))
-         (rename-out (make-dimension dimension))
+         (rename-out (make-world world))
          )
 
 (require
@@ -72,5 +72,5 @@
 (define (make-zone name title size . entities)
   (zone name title size entities))
 
-(define (make-dimension title sprites . zones)
-  (make-object dimension% 'title sprites zones))
+(define (make-world title sprites . zones)
+  (make-object world% 'title sprites zones))

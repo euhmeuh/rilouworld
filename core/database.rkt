@@ -19,7 +19,7 @@
 
 (define (make-database resources)
   (define sprite-db (make-sprite-db))
-  (add-palette!/file sprite-db 'palette (build-path "." "dimensions" "palette.png"))
+  (add-palette!/file sprite-db 'palette (build-path "." "worlds" "palette.png"))
   (for-each
     (lambda (resource)
       (cond
@@ -31,7 +31,7 @@
 
 (define (handle-image image sprite-db)
   (with-values image (name path) from quest:resource
-    (set! path (build-path "." "dimensions" path))
+    (set! path (build-path "." "worlds" path))
     (if (file-exists? path)
         (add-sprite!/file sprite-db
                           name
@@ -43,7 +43,7 @@
 (define (handle-animation animation sprite-db)
   (with-values animation (name path) from quest:resource
     (with-values animation (size) from quest:animation
-      (set! path (build-path "." "dimensions" path))
+      (set! path (build-path "." "worlds" path))
       (aif (open-bitmap path)
            (for ([bitmap (cut-image-in-parts it size)]
                  [index (in-naturals)])

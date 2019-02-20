@@ -1,6 +1,6 @@
 #lang s-exp "../langs/quest-lang.rkt"
 
-(dimension "Manafia"
+(world "Manafia"
   (sprites
     (larva "larva.png")
     (home-out-001 "home-out-001.png")

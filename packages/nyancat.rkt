@@ -1,6 +1,6 @@
 #lang racket/base
 
-;;; game logic for the nyancat dimension
+;;; game logic for the nyancat world
 
 (provide
   (rename-out (make-player player)

@@ -28,7 +28,7 @@
 (define *fps* 60.0)
 (define current-frame (make-parameter 0))
 
-(struct loop (options dimension renderer)
+(struct loop (options world renderer)
   #:methods gen:word
   [(define (word-fps self) *fps*)
    (define (word-label self frame-time)
@@ -36,9 +36,9 @@
    (define (word-output self)
      ((loop-renderer self)))
    (define (word-event self event)
-     (send (loop-dimension self) handle-event self event))
+     (send (loop-world self) handle-event self event))
    (define (word-tick self)
-     (send (loop-dimension self) emit 'tick)
+     (send (loop-world self) emit 'tick)
      (current-frame (add1 (current-frame)))
      self)])
 
@@ -55,15 +55,15 @@
 (define (layer-idx name)
   (index-of *layers* name))
 
-(define (make-renderer options render-context sprite-db dimension)
+(define (make-renderer options render-context sprite-db world)
   (define static-states
     (thunk
       (map (curryr render-static-sprite sprite-db)
-           (send dimension collect-static-sprites))))
+           (send world collect-static-sprites))))
   (define dynamic-states
     (thunk
       (map (curryr render-sprite sprite-db)
-           (send dimension collect-dynamic-sprites))))
+           (send world collect-dynamic-sprites))))
   (thunk
     (render-context (make-layer-config options)
                     (static-states)
@@ -96,18 +96,18 @@
       (quest:set-animation-last-change! animation now))
     (sprite-ref (quest:resource-name animation) frame)))
 
-(define (make-loop options dimension account)
+(define (make-loop options world account)
   (define sprite-db
-    (make-database (get-field resources dimension)))
+    (make-database (get-field resources world)))
   (define render-context
     (with-values options (width height) from engine-options
       (make-render-context width height sprite-db)))
   (define renderer
-    (make-renderer options render-context sprite-db dimension))
-  (loop options dimension renderer))
+    (make-renderer options render-context sprite-db world))
+  (loop options world renderer))
 
-(define (engine-start options dimension account)
+(define (engine-start options world account)
   (call-with-chaos
     (make-gui #:mode gl:gui-mode)
     (thunk
-      (fiat-lux (make-loop options dimension account)))))
+      (fiat-lux (make-loop options world account)))))

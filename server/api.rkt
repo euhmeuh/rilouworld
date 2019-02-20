@@ -10,7 +10,7 @@
       (dispatch-rules route ...))))
 
 (define *database*
-  '((dimensions
+  '((worlds
       ((name "Manafia")
        (ip "1.2.3.4"))
       ((name "Merdelin's World")
@@ -40,18 +40,18 @@
 
 (define-routes routes api-dispatcher api-url
   [("") root]
-  [("dimension") dimension]
-  [("dimension" (string-arg)) dimension]
+  [("world") world]
+  [("world" (string-arg)) world]
   [("player") player]
   [else root])
 
 (define (root req)
   (serialize routes))
 
-(define (dimension req (name #f))
+(define (world req (name #f))
   (serialize (if name
-                 (find-entity `(name is ,name) (database 'dimensions))
-                 (database 'dimensions))))
+                 (find-entity `(name is ,name) (database 'worlds))
+                 (database 'worlds))))
 
 (define (player req)
   (serialize (database 'players)))
