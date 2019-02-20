@@ -1,9 +1,4 @@
 #lang racket
-;; make racket think we're running a typed racket
-;; so that matrix operations run inside typed/racket
-;; but not the rest of our program
-(require live-free-or-die)
-(live-free-or-die!)
 
 (require math)
 (provide

@@ -48,9 +48,9 @@
   racket/function
   racket/contract
   racket/list
+  anaphoric
   lux/chaos/gui/key
-  "../utils/struct.rkt"
-  "../utils/anaphora.rkt")
+  rilouworld/utils/struct)
 
 (define-generics receiver
   (receiver-emit receiver event)

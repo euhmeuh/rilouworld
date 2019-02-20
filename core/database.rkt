@@ -7,12 +7,12 @@
 (require
   racket/class
   racket/function
+  anaphoric
   mode-lambda
   mode-lambda/static
-  "../utils/log.rkt"
-  "../utils/struct.rkt"
-  "../utils/anaphora.rkt"
-  (prefix-in quest: "../quest/entities.rkt"))
+  rilouworld/utils/log
+  rilouworld/utils/struct
+  (prefix-in quest: rilouworld/quest/entities))
 
 (define (sprite-ref name index)
   (string->symbol (format "~a/~a" name index)))

@@ -10,7 +10,7 @@
   make-state)
 
 (require
-  "../utils/anaphora.rkt")
+  anaphoric)
 
 (define (make-transitions start . rules)
   (define (try current-state event)

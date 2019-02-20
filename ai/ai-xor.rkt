@@ -1,5 +1,7 @@
 #lang racket
 
+(module+ main
+
 ;;; An Artificial Neural Network that learns the rules of binary XOR.
 
 (require "ai.rkt")
@@ -48,3 +50,4 @@
                                                 [1.0 0.0 1.0]
                                                 [1.0 1.0 1.0]])
                             network))
+)

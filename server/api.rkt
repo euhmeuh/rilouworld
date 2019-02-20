@@ -1,7 +1,7 @@
 #lang web-server
 
 (require
-  "../utils/anaphora.rkt")
+  anaphoric)
 
 (define-syntax-rule (define-routes list dispatcher url-maker route ...)
   (begin

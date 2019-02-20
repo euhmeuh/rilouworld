@@ -10,7 +10,7 @@
 
 (require
   racket/match
-  "../quest/entities.rkt")
+  rilouworld/quest/entities)
 
 (struct player simple-sprite ()
   #:methods gen:receiver

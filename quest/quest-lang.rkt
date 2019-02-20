@@ -5,7 +5,7 @@
 (provide (except-out (all-from-out racket/base)
                      #%module-begin)
          (rename-out (module-begin #%module-begin))
-         
+
          ;; provide the base entities
          (rename-out (make-pos pos))
          (rename-out (make-size size))
@@ -22,12 +22,12 @@
 
 (require
   racket/class
-  (for-syntax racket/base)
-  "../utils/anaphora.rkt"
-  "entities.rkt")
+  (for-syntax racket/base racket/format)
+  rilouworld/utils/anaphora
+  rilouworld/quest/entities)
 
 (define-for-syntax (package-path name)
-  (path->string (build-path ".." "packages" (format "~a.rkt" (syntax->datum name)))))
+  (string->symbol (~a "rilouworld/packages/" (syntax->datum name))))
 
 (define-syntax (module-begin stx)
   (syntax-case stx (from use)

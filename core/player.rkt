@@ -5,7 +5,7 @@
   make-player)
 
 (require
-  "state-machine.rkt")
+  rilouworld/core/state-machine)
 
 (define movement-transitions
   (make-transitions

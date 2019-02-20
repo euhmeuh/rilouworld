@@ -12,17 +12,19 @@
 (require
   racket/class
   racket/function
+  racket/list
+  anaphoric
   mode-lambda
   mode-lambda/static
   lux
   lux/chaos/gui
   (prefix-in gl: mode-lambda/backend/gl)
-  "database.rkt"
-  "../utils/struct.rkt"
-  "../utils/anaphora.rkt"
-  (prefix-in quest: "../quest/entities.rkt"))
+  rilouworld/core/database
+  rilouworld/utils/struct
+  (prefix-in quest: rilouworld/quest/entities))
 
-(define *nb-of-layers* 8)
+(define *layers* '(back player entity front ui))
+(define *nb-of-layers* (length *layers*))
 (define *fps* 60.0)
 (define current-frame (make-parameter 0))
 
@@ -47,7 +49,11 @@
 
 (define (make-layer-config options)
   (with-values options (width height) from engine-options
-    (vector (layer (/ width 2.) (/ height 2.)))))
+    (for/vector ([layer-name *layers*])
+      (layer (/ width 2.) (/ height 2.)))))
+
+(define (layer-idx name)
+  (index-of *layers* name))
 
 (define (make-renderer options render-context sprite-db dimension)
   (define static-states

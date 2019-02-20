@@ -2,9 +2,9 @@
 
 (require
   racket/class
-  "core/engine.rkt"
-  "server/account.rkt"
-  "quest/base.rkt")
+  rilouworld/core/engine
+  rilouworld/server/account
+  rilouworld/quest/base)
 
 (define dimension (load-quest "dimensions/nyancat.qst"))
 (define options (engine-options 512 384 "Rilouworld"))
