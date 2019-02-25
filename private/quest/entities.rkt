@@ -3,6 +3,9 @@
 ;;; Base structs for the Quest language
 
 (provide
+  ;; layer definition
+  LAYERS
+  layer-idx
   ;; interface that tells the entity can react to events
   gen:receiver
   receiver?
@@ -39,6 +42,7 @@
   (struct-out particle)
   ;; base entity that holds a full world
   world%
+  world?
   ;; give access to keyboard handling procedures
   (all-from-out lux/chaos/gui/key))
 
@@ -50,7 +54,10 @@
   racket/list
   anaphoric
   lux/chaos/gui/key
-  rilouworld/utils/struct)
+  rilouworld/private/utils/struct)
+
+(define LAYERS '(back back-entities player front-entities front ui))
+(define (layer-idx name) (index-of LAYERS name))
 
 (define-generics receiver
   (receiver-emit receiver event)
@@ -63,20 +70,20 @@
             (filter receiver? entities)))
 
 (define-generics sprite
-  (sprite-pos sprite)
+  (sprite-pos sprite screen-size)
   (sprite-image sprite)
   (set-sprite-image! sprite image)
   (sprite-layer sprite)
   (sprite-static? sprite)
   #:fallbacks
-  [(define (sprite-pos sprite)
+  [(define (sprite-pos sprite screen-size)
      (pos 0. 0.))
    (define (sprite-image sprite)
      #f)
    (define (set-sprite-image! sprite image)
      (void))
    (define (sprite-layer sprite)
-     0)
+     (layer-idx 'back-entities))
    (define (sprite-static? sprite)
      #f)])
 
@@ -106,7 +113,7 @@
 
 (struct simple-sprite ([image #:mutable] pos)
   #:methods gen:sprite
-  [(define (sprite-pos self)
+  [(define (sprite-pos self screen-size)
      (simple-sprite-pos self))
    (define (sprite-image self)
      (simple-sprite-image self))
@@ -122,6 +129,11 @@
   #:methods gen:receiver []
   #:methods gen:sprite
   [(define (sprite-static? self) #t)
+   (define (sprite-pos self screen-size)
+     (pos (/ (size-w screen-size) 2.)
+          (/ (size-h screen-size) 2.)))
+   (define (sprite-layer self)
+     (layer-idx 'back))
    (define (sprite-image self)
      (scrolling-bg-image self))
    (define (set-sprite-image! self image)
@@ -160,6 +172,8 @@
       (filter (not/c sprite-static?) current-sprites))
 
     (super-new)))
+
+(define world? (is-a?/c world%))
 
 (define (initialize-sprites! zone resources)
   (define sprites (sprite-holder-children zone))

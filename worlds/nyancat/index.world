@@ -1,4 +1,4 @@
-#lang s-exp rilouworld/quest/quest-lang
+#lang rilouworld/quest
 
 (from nyancat use player troll star)
 

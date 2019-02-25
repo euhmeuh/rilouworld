@@ -3,7 +3,7 @@
 (from fxp2 use home door)
 
 (world
-  (name "Manafia")
+  (name "Ma")
   (id "a61691e7-c6ab-4be7-86ed-89c3a7b2c9fb")
   (version "0.4")
 
@@ -23,10 +23,10 @@
 
   (zone-size (w 32) (h 24)) ;; will mess up all map files if changed
   (zones
-    (-> "elfia.zone") ;; zone fetched by reference
+    (-> "sewi.zone") ;; zone fetched by reference
     (zone ;; inlined zone
-      (name "Golfia")
-      (map "golfia.map")
+      (name "Middle Town of Supa")
+      (map "supa.map")
       (type outside)
       (rectangles
         (rectangle (x 0) (y 0) (w 3) (h 2)))

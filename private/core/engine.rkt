@@ -19,18 +19,18 @@
   lux
   lux/chaos/gui
   (prefix-in gl: mode-lambda/backend/gl)
-  rilouworld/core/database
-  rilouworld/utils/struct
-  (prefix-in quest: rilouworld/quest/entities))
+  rilouworld/private/core/database
+  rilouworld/private/utils/struct
+  (prefix-in quest: rilouworld/quest))
 
-(define *layers* '(back player entity front ui))
-(define *nb-of-layers* (length *layers*))
-(define *fps* 60.0)
+(define LAYERS-NUM (length quest:LAYERS))
+(define FPS 60.0)
+
 (define current-frame (make-parameter 0))
 
 (struct loop (options world renderer)
   #:methods gen:word
-  [(define (word-fps self) *fps*)
+  [(define (word-fps self) FPS)
    (define (word-label self frame-time)
      (lux-standard-label (engine-options-title (loop-options self)) frame-time))
    (define (word-output self)
@@ -44,40 +44,41 @@
 
 (struct engine-options (width height title))
 
+(define (get-screen-size engine-options)
+  (quest:size (engine-options-width engine-options)
+              (engine-options-height engine-options)))
+
 (define (make-render-context width height sprite-db)
-  (gl:stage-draw/dc sprite-db width height *nb-of-layers*))
+  (gl:stage-draw/dc sprite-db width height LAYERS-NUM))
 
 (define (make-layer-config options)
   (with-values options (width height) from engine-options
-    (for/vector ([layer-name *layers*])
+    (for/vector ([layer-name quest:LAYERS])
       (layer (/ width 2.) (/ height 2.)))))
 
-(define (layer-idx name)
-  (index-of *layers* name))
-
 (define (make-renderer options render-context sprite-db world)
-  (define static-states
-    (thunk
-      (map (curryr render-static-sprite sprite-db)
-           (send world collect-static-sprites))))
-  (define dynamic-states
-    (thunk
-      (map (curryr render-sprite sprite-db)
-           (send world collect-dynamic-sprites))))
+  (define static-states-cache #f)
+  (define (static-states)
+    (set! static-states-cache
+          (or static-states-cache
+              (map (curryr render-sprite sprite-db options)
+                   (send world collect-static-sprites))))
+    static-states-cache)
+  (define (dynamic-states)
+    (map (curryr render-sprite sprite-db options)
+         (send world collect-dynamic-sprites)))
   (thunk
     (render-context (make-layer-config options)
                     (static-states)
                     (dynamic-states))))
 
-(define (render-sprite the-sprite sprite-db)
-  (with-values the-sprite (pos image layer) from quest:sprite
+(define (render-sprite the-sprite sprite-db engine-options)
+  (with-values the-sprite (image layer) from quest:sprite
+    (define pos (quest:sprite-pos the-sprite (get-screen-size engine-options)))
     (sprite (quest:pos-x pos) (quest:pos-y pos)
             (sprite-idx sprite-db (get-and-update-sprite! image))
             #:layer layer
             #:pal-idx (palette-idx sprite-db 'palette))))
-
-(define (render-static-sprite sprite sprite-db)
-  #f)
 
 (define (get-and-update-sprite! image)
   (cond

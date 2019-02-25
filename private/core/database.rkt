@@ -10,9 +10,9 @@
   anaphoric
   mode-lambda
   mode-lambda/static
-  rilouworld/utils/log
-  rilouworld/utils/struct
-  (prefix-in quest: rilouworld/quest/entities))
+  rilouworld/private/utils/log
+  rilouworld/private/utils/struct
+  (prefix-in quest: rilouworld/quest))
 
 (define (sprite-ref name index)
   (string->symbol (format "~a/~a" name index)))

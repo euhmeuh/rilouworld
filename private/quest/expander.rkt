@@ -23,8 +23,8 @@
 (require
   racket/class
   (for-syntax racket/base racket/format)
-  rilouworld/utils/anaphora
-  rilouworld/quest/entities)
+  rilouworld/private/utils/anaphora
+  rilouworld/private/quest/entities)
 
 (define-for-syntax (package-path name)
   (string->symbol (~a "rilouworld/packages/" (syntax->datum name))))

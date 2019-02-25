@@ -11,7 +11,7 @@
 
 (define *database*
   '((worlds
-      ((name "Manafia")
+      ((name "Ma")
        (ip "1.2.3.4"))
       ((name "Merdelin's World")
        (ip "5.6.7.8")))

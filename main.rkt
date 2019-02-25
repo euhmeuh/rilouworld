@@ -1,10 +1,9 @@
 #lang racket/base
 
 (require
-  racket/class
-  rilouworld/core/engine
-  rilouworld/server/account
-  rilouworld/quest/base)
+  rilouworld/engine
+  rilouworld/account
+  rilouworld/quest)
 
 (define world (load-quest "worlds/nyancat/index.world"))
 (define options (engine-options 512 384 "Rilouworld"))
