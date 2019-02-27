@@ -23,7 +23,7 @@
 (define (database key)
   (cdr (assq key *database*)))
 
-(define (find-entity predicate lst)
+(define (find-actor predicate lst)
   (findf
     (lambda (obj)
       (let [(field (first predicate))
@@ -50,7 +50,7 @@
 
 (define (world req (name #f))
   (serialize (if name
-                 (find-entity `(name is ,name) (database 'worlds))
+                 (find-actor `(name is ,name) (database 'worlds))
                  (database 'worlds))))
 
 (define (player req)

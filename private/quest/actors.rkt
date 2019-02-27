@@ -6,13 +6,13 @@
   ;; layer definition
   LAYERS
   layer-idx
-  ;; interface that tells the entity can react to events
+  ;; interface that allows the actor to react to events
   gen:receiver
   receiver?
   receiver-emit
-  ;; utility procedure that emits an event to all given entities
+  ;; utility procedure that emits an event to all given actors
   emit-to-all
-  ;; interface that tells the entity can display itself as a sprite
+  ;; interface that allows the actor to display itself as a sprite
   gen:sprite
   sprite?
   sprite-pos
@@ -20,7 +20,7 @@
   set-sprite-image!
   sprite-layer
   sprite-static?
-  ;; interface for entities that have gen:sprite children
+  ;; interface for actors that have gen:sprite children
   gen:sprite-holder
   sprite-holder?
   sprite-holder-children
@@ -40,7 +40,7 @@
   (struct-out simple-sprite)
   (struct-out scrolling-bg)
   (struct-out particle)
-  ;; base entity that holds a full world
+  ;; base actor that holds a full world
   world%
   world?
   ;; give access to keyboard handling procedures
@@ -56,7 +56,7 @@
   lux/chaos/gui/key
   rilouworld/private/utils/struct)
 
-(define LAYERS '(back back-entities player front-entities front ui))
+(define LAYERS '(back back-actors player front-actors front ui))
 (define (layer-idx name) (index-of LAYERS name))
 
 (define-generics receiver
@@ -65,9 +65,9 @@
   [(define (receiver-emit receiver event)
      #t)])
 
-(define (emit-to-all event entities)
+(define (emit-to-all event actors)
   (for-each (curryr receiver-emit event)
-            (filter receiver? entities)))
+            (filter receiver? actors)))
 
 (define-generics sprite
   (sprite-pos sprite screen-size)
@@ -83,26 +83,26 @@
    (define (set-sprite-image! sprite image)
      (void))
    (define (sprite-layer sprite)
-     (layer-idx 'back-entities))
+     (layer-idx 'back-actors))
    (define (sprite-static? sprite)
      #f)])
 
 (define-generics sprite-holder
   (sprite-holder-children sprite-holder))
 
-;; recursively find sprites in a list of entities
-(define (collect-sprites result entities)
+;; recursively find sprites in a list of actors
+(define (collect-sprites result actors)
   (cond
-    [(empty? entities) result]
-    [(sprite-holder? (car entities))
-     (collect-sprites (cons (sprite-holder-children (car entities))
+    [(empty? actors) result]
+    [(sprite-holder? (car actors))
+     (collect-sprites (cons (sprite-holder-children (car actors))
                             result)
-                      (cdr entities))]
-    [(sprite? (car entities))
-     (collect-sprites (cons (car entities) result)
-                      (cdr entities))]
+                      (cdr actors))]
+    [(sprite? (car actors))
+     (collect-sprites (cons (car actors) result)
+                      (cdr actors))]
     [else
-     (collect-sprites result (cdr entities))]))
+     (collect-sprites result (cdr actors))]))
 
 (struct pos (x y) #:mutable)
 (struct size (w h) #:mutable)
@@ -141,13 +141,13 @@
 
 (struct particle simple-sprite (direction lifetime))
 
-(struct zone (name title size entities)
+(struct zone (name title size actors)
   #:methods gen:receiver
   [(define (receiver-emit self event)
-     (emit-to-all event (zone-entities self)))]
+     (emit-to-all event (zone-actors self)))]
   #:methods gen:sprite-holder
   [(define (sprite-holder-children self)
-     (collect-sprites '() (zone-entities self)))])
+     (collect-sprites '() (zone-actors self)))])
 
 (define world%
   (class object%

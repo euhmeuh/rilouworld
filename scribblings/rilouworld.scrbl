@@ -8,26 +8,35 @@
     rilouworld/quest
     rilouworld/account))
 
-@title{Rilouworld: Decentralized Game Universe}
+@title[#:style 'toc]{Rilouworld: Decentralized Game Universe}
 @author{Jérôme Martin}
+
+Rilouworld is a decentralized game environment in which players can create and share their own worlds.
+
+@(local-table-of-contents)
 
 @section{Overview}
 
 Rilouworld is a decentralized game environment in which players can create and share
 their own worlds.
 
-Worlds are made using a domain specific language call Quest, which allows you to describe
-zones, monsters, objects, weapons, characters, dialogs, and of course, quests.
+Worlds are made using a domain specific language call @bold{Quest} (@racketmodname[rilouworld/quest]),
+which allows you to describe zones, monsters, objects, weapons, characters, dialogs, and of course, quests.
 
 This project is a work in progress and an experimentation.
 It's not ready for production yet, but you are welcome to join us on the
 @hyperlink["https://github.com/euhmeuh/rilouworld"]{Github repository} if you like the idea!
 
-@section{Quick start}
+@subsection{Starting the engine}
 
 @defmodule[rilouworld/engine]
 
 @(racketblock
+  (require
+    rilouworld/engine
+    rilouworld/quest
+    rilouworld/account)
+
   (engine-start
    (engine-options 512 384 "Rilouworld")
    (load-quest "worlds/ma/index.world")
@@ -43,5 +52,5 @@ It's not ready for production yet, but you are welcome to join us on the
   when passed to @racket[engine-start].
 }
 
-@include-section["networking.scrbl"]
 @include-section["quest.scrbl"]
+@include-section["networking.scrbl"]

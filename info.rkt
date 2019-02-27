@@ -6,4 +6,4 @@
 (define pkg-authors '(euhmeuh))
 (define version "0.1.0")
 
-(define scribblings '(("scribblings/intro.scrbl")))
+(define scribblings '(("scribblings/rilouworld.scrbl" (multi-page))))

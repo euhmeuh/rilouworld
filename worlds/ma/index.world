@@ -4,8 +4,9 @@
 
 (world
   (name "Ma")
-  (id "a61691e7-c6ab-4be7-86ed-89c3a7b2c9fb")
+  (uuid "a61691e7-c6ab-4be7-86ed-89c3a7b2c9fb")
   (version "0.4")
+  (description "The land created after the big rebalance.")
 
   (changelog
     (change (version "0.4") (date "2019-02-20T16:10:00Z") (breaking) "Breaking change: Dimensions are renamed Worlds!")
@@ -19,12 +20,9 @@
     (author "T-Dj@-Mort")
     (author "Head Hunter (aka Apokalypse)"))
 
-  (description "The land created after the big rebalance.")
-
-  (zone-size (w 32) (h 24)) ;; will mess up all map files if changed
   (zones
     (-> "sewi.zone") ;; zone fetched by reference
-    (zone ;; inlined zone
+    (zone supa ;; inlined zone
       (name "Middle Town of Supa")
       (map "supa.map")
       (type outside)

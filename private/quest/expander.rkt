@@ -6,7 +6,7 @@
                      #%module-begin)
          (rename-out (module-begin #%module-begin))
 
-         ;; provide the base entities
+         ;; provide the base actors
          (rename-out (make-pos pos))
          (rename-out (make-size size))
          (rename-out (make-rect rect))
@@ -24,21 +24,21 @@
   racket/class
   (for-syntax racket/base racket/format)
   rilouworld/private/utils/anaphora
-  rilouworld/private/quest/entities)
+  rilouworld/private/quest/actors)
 
 (define-for-syntax (package-path name)
   (string->symbol (~a "rilouworld/packages/" (syntax->datum name))))
 
 (define-syntax (module-begin stx)
   (syntax-case stx (from use)
-    [(_ (from package use entity ...) ... expr)
+    [(_ (from package use actor ...) ... expr)
      (with-syntax ([(path ...)
                     (datum->syntax stx
                       (map package-path
                            (syntax->list (syntax/loc stx (package ...)))))])
        #'(#%module-begin
            (provide object)
-           (require (only-in path entity ...)) ...
+           (require (only-in path actor ...)) ...
            (define object expr)))]))
 
 (define (make-pos x y)
@@ -69,8 +69,8 @@
 (define (make-animation name path size frames [hitbox (rect 0 0 0 0)])
   (animation name path hitbox size frames (length frames) 0 0))
 
-(define (make-zone name title size . entities)
-  (zone name title size entities))
+(define (make-zone name title size . actors)
+  (zone name title size actors))
 
 (define (make-world title sprites . zones)
   (make-object world% 'title sprites zones))
