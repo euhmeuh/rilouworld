@@ -3,33 +3,20 @@
 @(require
   (for-label
     racket/base
-    racket/contract
     rilouworld/quest))
 
-@title{The Quest language}
+@title{Quest Reference}
 
 @defmodulelang[rilouworld/quest]
 
-@section{Introduction}
+The Quest language is a DSL for writing game worlds in Rilouworld.
+You'll find below the complete description of the language.
 
-The Quest language is a declarative language which provides a simple and intuitive syntax
-for writing new adventures in the Rilouworld.
+For an easy introduction to it, you might want to read @secref["Introduction_to_the_Quest_language"].
 
-To make the simplest possible world, start with a new file like this:
+@section{The Quest language}
 
-@(racketmod
-  rilouworld/quest
-  (world
-    (name "World of Gardening")
-    (zones
-      (zone garden
-        (name "Your Garden")
-        (map "garden.map")
-        (type outside)
-        (rectangles (rect 0 0 100 100))
-        (actors (simple-player (pos 50 50)))))))
-
-@section{Language Reference}
+@defmodulelang[rilouworld/quest #:no-declare #:link-target? #f]
 
 @defform[#:literals (name uuid version changelog change date breaking authors author section description zones)
          (world (name world-name)

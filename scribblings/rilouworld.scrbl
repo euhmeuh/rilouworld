@@ -29,28 +29,17 @@ It's not ready for production yet, but you are welcome to join us on the
 
 @subsection{Starting the engine}
 
-@defmodule[rilouworld/engine]
+@defmodule*[(rilouworld/engine rilouworld/quest rilouworld/account) #:no-declare #:link-target? #f]
+
+To start the game engine as a client, you can use the @racket[engine-start] function:
 
 @(racketblock
-  (require
-    rilouworld/engine
-    rilouworld/quest
-    rilouworld/account)
-
   (engine-start
    (engine-options 512 384 "Rilouworld")
    (load-quest "worlds/ma/index.world")
    (account "EuhMeuh" 'supa)))
 
-@defproc[(engine-start [options engine-options?] [world world?] [account account?]) any/c]{
-  Start the game engine with @racket[options] defining the width, height, and title of the
-  window, loading a given local @racket[world] using @racket[account] as the player.
-}
-
-@defstruct*[engine-options ([width integer?] [height integer?] [title string?])]{
-  Define @racket[width], @racket[height] and @racket[title] of the main game window,
-  when passed to @racket[engine-start].
-}
-
-@include-section["quest.scrbl"]
-@include-section["networking.scrbl"]
+@include-section["quest-guide.scrbl"]
+@include-section["networking-guide.scrbl"]
+@include-section["reference/reference.scrbl"]
+@include-section["vocabulary.scrbl"]
