@@ -18,16 +18,23 @@ For an easy introduction to it, you might want to read @secref["Introduction_to_
 
 @defmodulelang[rilouworld/quest #:no-declare #:link-target? #f]
 
-@defform[#:literals (name uuid version changelog change date breaking authors author section description zones)
+@defform[#:literals (name uuid version
+                     changelog change date breaking
+                     authors author section
+                     description resources zones)
          (world (name world-name)
                 (uuid world-uuid)
                 (version world-version)
                 (description world-desc)
                 (changelog change-expr ...)
                 (authors author-expr ...)
+                (resources resource ...)
                 (zones zone ...))
          #:grammar
-         [(change-expr (change (version change-version) (date change-date) maybe-breaking change-desc))
+         [(change-expr (change (version change-version)
+                               (date change-date)
+                               maybe-breaking
+                               change-desc))
           (maybe-breaking (breaking))
           (author-expr (author maybe-section author-name))
           (maybe-section (code:line) (section section-name))]
@@ -41,6 +48,7 @@ For an easy introduction to it, you might want to read @secref["Introduction_to_
           (change-desc string?)
           (author-name string?)
           (section-name string?)
+          (resource resource?)
           (zone zone?)]]{
     Create a new playable world.
 }

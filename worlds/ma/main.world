@@ -1,6 +1,6 @@
 #lang rilouworld/quest
 
-(from fxp2 use home door)
+(from rilouw use home door)
 
 (world
   (name "Ma")
@@ -29,66 +29,9 @@
       (rectangles
         (rectangle (x 0) (y 0) (w 3) (h 2)))
       (actors
-        (fxp2:home
+        (rilouw:home
           (model "small-with-one-door")
           (position (x 32) (y 128))
           (doors
-            (fxp2:door (model "wooden-home-door")
-                       (target "tilly-home.zone"))))))))
-
-;; primitives
-
-number flag text filepath (list <type>) (symbol <symbols> ...)
-
-;; rilouworld base
-
-(define-quest-object position
-  (x number)
-  (y number))
-
-(define-quest-object size
-  (w number)
-  (h number))
-
-(define-quest-object rectangle
-  (x number)
-  (y number)
-  (w number)
-  (h number))
-
-(define-quest-object change
-  (version text)
-  (date text)
-  (breaking flag)
-  text)
-
-(define-quest-object author
-  (section text #:optional)
-  text)
-
-(define-quest-object zone
-  (name text)
-  (map filepath)
-  (type (symbol outside inside))
-  (rectangles (list rectangle))
-  (actors (list actor)))
-
-(define-quest-object world
-  (name text)
-  (id text)
-  (version text)
-  (changelog (list change))
-  (authors (list author))
-  (description text)
-  (zone-size size)
-  (zones (list zone)))
-
-;; fxp2
-
-(define-quest-actor door
-  (model text)
-  (target filepath))
-
-(define-quest-actor home
-  (model text)
-  (doors (list door)))
+            (rilouw:door (model "wooden-home-door")
+                         (target 'tilly-home))))))))

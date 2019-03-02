@@ -1,0 +1,43 @@
+#lang rilouworld/quest
+
+(from spacecat use player troll star)
+
+(world
+  (name "Spacecat")
+  (resources
+    (animation spacecat-anim "spacecat/spacecat.png" (size 34 21) (durations 4 4 4 4 4 4))
+    (image space-bg-img "spacecat/space-bg.png")
+    (image bg-star-img "spacecat/bg-star.png")
+    (image star-img "spacecat/star.png" (rect 0 0 10 10))
+    (image troll-img "spacecat/troll.png" (rect 0 0 10 10)))
+  (zones
+    (zone space
+      (name "Space")
+      (rectangles (rect 0 0 32 24))
+      (actors
+        ;; the space background scrolling behind the scene
+        (scrolling-bg (image space-bg-img) (direction left) (speed 0.2))
+
+        ;; an area that spawns background stars
+        (spawner
+          (rect 0 0 512 384)
+          (actors
+            [(freq .2) (particle (image bg-star-img)
+                                 (pos <x> <y>)
+                                 (direction left)
+                                 (speed .30))]))
+
+        ;; an area that spawns trolls and stars
+        (spawner
+          (rect 512 0 16 384)
+          (actors
+            [(freq .5) (troll (image troll-img) (pos <x> <y>))]
+            [(freq .01) (star (image star-img) (pos <x> <y>))]))
+
+        ;; a test star
+        (star (image star-img) (pos 100. 100.))
+
+        ;; the player
+        (player (image spacecat-anim) (pos 50. 256.))
+
+        ))))

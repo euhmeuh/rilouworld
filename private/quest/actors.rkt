@@ -35,6 +35,7 @@
   (struct-out image)
   (struct-out animation)
   (struct-out zone)
+  (struct-out actor)
   (struct-out spawner)
   (struct-out spawn-info)
   (struct-out simple-sprite)
@@ -110,8 +111,9 @@
 (struct resource (name path))
 (struct image resource (hitbox))
 (struct animation image (size frames length [frame #:mutable] [last-change #:mutable]))
+(struct actor ())
 
-(struct simple-sprite ([image #:mutable] pos)
+(struct simple-sprite actor ([image #:mutable] pos)
   #:methods gen:sprite
   [(define (sprite-pos self screen-size)
      (simple-sprite-pos self))
@@ -120,12 +122,12 @@
    (define (set-sprite-image! self image)
      (set-simple-sprite-image! self image))])
 
-(struct spawner (rect spawn-infos)
+(struct spawner actor (rect spawn-infos)
   #:methods gen:receiver [])
 
 (struct spawn-info (freq constructor args))
 
-(struct scrolling-bg ([image #:mutable] direction speed)
+(struct scrolling-bg actor ([image #:mutable] direction speed)
   #:methods gen:receiver []
   #:methods gen:sprite
   [(define (sprite-static? self) #t)

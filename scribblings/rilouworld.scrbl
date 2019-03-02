@@ -41,5 +41,6 @@ To start the game engine as a client, you can use the @racket[engine-start] func
 
 @include-section["quest-guide.scrbl"]
 @include-section["networking-guide.scrbl"]
+@include-section["bundles/bundles.scrbl"]
 @include-section["reference/reference.scrbl"]
 @include-section["vocabulary.scrbl"]

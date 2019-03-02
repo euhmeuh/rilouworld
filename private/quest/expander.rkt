@@ -26,16 +26,16 @@
   rilouworld/private/utils/anaphora
   rilouworld/private/quest/actors)
 
-(define-for-syntax (package-path name)
-  (string->symbol (~a "rilouworld/packages/" (syntax->datum name))))
+(define-for-syntax (bundle-path name)
+  (string->symbol (~a "rilouworld/bundles/" (syntax->datum name))))
 
 (define-syntax (module-begin stx)
   (syntax-case stx (from use)
-    [(_ (from package use actor ...) ... expr)
+    [(_ (from bundle use actor ...) ... expr)
      (with-syntax ([(path ...)
                     (datum->syntax stx
-                      (map package-path
-                           (syntax->list (syntax/loc stx (package ...)))))])
+                      (map bundle-path
+                           (syntax->list (syntax/loc stx (bundle ...)))))])
        #'(#%module-begin
            (provide object)
            (require (only-in path actor ...)) ...
