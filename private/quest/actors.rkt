@@ -6,12 +6,15 @@
   ;; layer definition
   LAYERS
   layer-idx
+
   ;; interface that allows the actor to react to events
   gen:receiver
   receiver?
   receiver-emit
+
   ;; utility procedure that emits an event to all given actors
   emit-to-all
+
   ;; interface that allows the actor to display itself as a sprite
   gen:sprite
   sprite?
@@ -20,36 +23,37 @@
   set-sprite-image!
   sprite-layer
   sprite-static?
+
   ;; interface for actors that have gen:sprite children
   gen:sprite-holder
   sprite-holder?
   sprite-holder-children
+
   ;; utility recursive function that searches for sprites and sprites-holders
   ;; and returns a flatten list of sprites
   collect-sprites
+
   ;; base structs used in quest files
   (struct-out pos)
   (struct-out size)
   (struct-out rect)
+
+  (struct-out change)
+  (struct-out author)
+
   (struct-out resource)
   (struct-out image)
   (struct-out animation)
+
+  (struct-out world)
   (struct-out zone)
   (struct-out actor)
-  (struct-out spawner)
-  (struct-out spawn-info)
-  (struct-out simple-sprite)
-  (struct-out scrolling-bg)
-  (struct-out particle)
-  ;; base actor that holds a full world
-  world%
-  world?
+
   ;; give access to keyboard handling procedures
   (all-from-out lux/chaos/gui/key))
 
 (require
   racket/generic
-  racket/class
   racket/function
   racket/contract
   racket/list
@@ -108,42 +112,17 @@
 (struct pos (x y) #:mutable)
 (struct size (w h) #:mutable)
 (struct rect pos (w h) #:mutable)
+
+(struct change (version date desc))
+(struct author (name section))
+
 (struct resource (name path))
 (struct image resource (hitbox))
 (struct animation image (size frames length [frame #:mutable] [last-change #:mutable]))
+
 (struct actor ())
 
-(struct simple-sprite actor ([image #:mutable] pos)
-  #:methods gen:sprite
-  [(define (sprite-pos self screen-size)
-     (simple-sprite-pos self))
-   (define (sprite-image self)
-     (simple-sprite-image self))
-   (define (set-sprite-image! self image)
-     (set-simple-sprite-image! self image))])
-
-(struct spawner actor (rect spawn-infos)
-  #:methods gen:receiver [])
-
-(struct spawn-info (freq constructor args))
-
-(struct scrolling-bg actor ([image #:mutable] direction speed)
-  #:methods gen:receiver []
-  #:methods gen:sprite
-  [(define (sprite-static? self) #t)
-   (define (sprite-pos self screen-size)
-     (pos (/ (size-w screen-size) 2.)
-          (/ (size-h screen-size) 2.)))
-   (define (sprite-layer self)
-     (layer-idx 'back))
-   (define (sprite-image self)
-     (scrolling-bg-image self))
-   (define (set-sprite-image! self image)
-     (set-scrolling-bg-image! self image))])
-
-(struct particle simple-sprite (direction lifetime))
-
-(struct zone (name title size actors)
+(struct zone (id name map type rectangles actors)
   #:methods gen:receiver
   [(define (receiver-emit self event)
      (emit-to-all event (zone-actors self)))]
@@ -151,46 +130,24 @@
   [(define (sprite-holder-children self)
      (collect-sprites '() (zone-actors self)))])
 
-(define world%
-  (class object%
-    (init-field title resources zones)
-    (field [current-zone (car zones)]
-           [current-sprites (initialize-sprites! current-zone resources)])
+(struct world (name uuid version desc changelog authors resources zones
+               [current-zone #:mutable]
+               [current-sprites #:mutable]))
 
-    (define/public (emit event)
-      (receiver-emit current-zone event)
-      #t)
+(define (handle-event world game-loop event)
+  (cond
+   [(eq? event 'close) #f]
+   [(receiver-emit (world-current-zone world) event) game-loop]
+   [else #f]))
 
-    (define/public (handle-event game-loop event)
-      (cond
-       [(eq? event 'close) #f]
-       [(emit event) game-loop]
-       [else #f]))
+(define (initialize-world! world)
+  (set-world-current-zone! world (car (world-zones world)))
+  (set-world-current-sprites!
+    world
+    (sprite-holder-children (world-current-zone world))))
 
-    (define/public (collect-static-sprites)
-      (filter sprite-static? current-sprites))
+(define (collect-static-sprites world)
+  (filter sprite-static? (world-current-sprites world)))
 
-    (define/public (collect-dynamic-sprites)
-      (filter (not/c sprite-static?) current-sprites))
-
-    (super-new)))
-
-(define world? (is-a?/c world%))
-
-(define (initialize-sprites! zone resources)
-  (define sprites (sprite-holder-children zone))
-  (for-each
-    (lambda (the-sprite)
-      (with-values the-sprite (image) from sprite
-        (when (symbol? image)
-          (aif (get-resource-by-name image resources)
-               (set-sprite-image! the-sprite it)
-               (error 'unknown-image
-                      (format "Could not find any image with the name '~a'." image))))))
-    sprites)
-  sprites)
-
-(define (get-resource-by-name name resources)
-  (findf (lambda (resource)
-           (eq? name (resource-name resource)))
-         resources))
+(define (collect-dynamic-sprites world)
+  (filter (not/c sprite-static?) (world-current-sprites world)))

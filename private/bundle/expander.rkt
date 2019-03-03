@@ -33,7 +33,4 @@
   (syntax-parse stx
     #:datum-literals (attributes)
     [(_ id (attributes attr:actor-attr ...) (events event:actor-event ...))
-     #'(begin
-         (struct id actor (attr.id ...))
-         ;(define-syntax ())
-       )]))
+     #'(void)]))

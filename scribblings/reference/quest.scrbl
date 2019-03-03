@@ -18,10 +18,10 @@ For an easy introduction to it, you might want to read @secref["Introduction_to_
 
 @defmodulelang[rilouworld/quest #:no-declare #:link-target? #f]
 
-@defform[#:literals (name uuid version
+@defform[#:literals (name uuid version description
                      changelog change date breaking
                      authors author section
-                     description resources zones)
+                     resources zones)
          (world (name world-name)
                 (uuid world-uuid)
                 (version world-version)

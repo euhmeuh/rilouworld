@@ -4,27 +4,23 @@
 
 (provide (except-out (all-from-out racket/base)
                      #%module-begin)
-         (rename-out (module-begin #%module-begin))
-
-         ;; provide the base actors
-         (rename-out (make-pos pos))
-         (rename-out (make-size size))
-         (rename-out (make-rect rect))
-         (rename-out (make-scrolling-bg scrolling-bg))
-         (rename-out (make-spawner spawner))
-         (rename-out (make-particle particle))
-         (rename-out (make-resources resources))
-         (rename-out (make-image image))
-         (rename-out (make-animation animation))
-         (rename-out (make-zone zone))
-         (rename-out (make-world world))
-         )
+         (rename-out [module-begin #%module-begin])
+         pos
+         size
+         rect
+         (rename-out [parse-world world])
+         (rename-out [parse-zone zone])
+         (rename-out [load-quest ->]))
 
 (require
-  racket/class
-  (for-syntax racket/base racket/format)
-  rilouworld/private/utils/anaphora
-  rilouworld/private/quest/actors)
+  syntax/parse
+  (for-syntax
+    racket/base
+    racket/format
+    syntax/parse
+    syntax/stx)
+  rilouworld/private/quest/actors
+  rilouworld/private/quest/loader)
 
 (define-for-syntax (bundle-path name)
   (string->symbol (~a "rilouworld/bundles/" (syntax->datum name))))
@@ -41,36 +37,91 @@
            (require (only-in path actor ...)) ...
            (define object expr)))]))
 
-(define (make-pos x y)
+(define (pos x y)
   (pos x y))
 
-(define (make-size x y)
+(define (size x y)
   (size x y))
 
-(define (make-rect x y w h)
+(define (rect x y w h)
   (rect x y w h))
 
-(define (make-scrolling-bg image direction speed)
-  (scrolling-bg image direction speed))
+(begin-for-syntax
+  (define-syntax-class pos-exp #:literals (pos) (pattern (pos x y)))
+  (define-syntax-class size-exp #:literals (size) (pattern (size w h)))
+  (define-syntax-class rect-exp #:literals (rect) (pattern (rect x y w h)))
 
-(define-asyntax-rule (make-spawner rect (freq constructor arg ...) ...) (<pos>)
-  (let ([<pos> '<pos>])
-    (spawner rect (list (spawn-info freq constructor (list arg ...)) ...))))
+  (define-syntax-class change-exp
+    #:datum-literals (change version date breaking)
+    (pattern (change (version <version>:str)
+                     (date <date>:str)
+                     (~optional (~and (breaking) breaking-mark))
+                     <desc>:str)
+             #:with <breaking?> (if (attribute breaking-mark) #'#t #'#f)
+             #:with result #'(change <version> <date> <breaking?> <desc>)))
 
-(define (make-particle image pos direction lifetime)
-  (particle image pos direction lifetime))
+  (define-syntax-class author-exp
+    #:datum-literals (author section)
+    (pattern (author (~optional (section <section>:str)
+                                #:defaults ([<section> #'#f]))
+                     <name>:str)
+             #:with result #'(author <name> <section>)))
 
-(define-syntax-rule (make-resources resource ...)
-  (list resource ...))
+  (define-syntax-class resource-exp
+    #:datum-literals (image animation durations)
+    (pattern (image <id>:id
+                    <path>:str
+                    (~optional <hitbox>:rect-exp
+                               #:defaults ([<hitbox> #'#f])))
+             #:with result #'(image '<id> <path> <hitbox>))
+    (pattern (animation <id>:id
+                        <path>:str
+                        (~optional <hitbox>:rect-exp
+                                   #:defaults ([<hitbox> #'#f]))
+                        <size>:size-exp
+                        (durations <duration>:nat ...))
+             #:with <length> (datum->syntax this-syntax (length (syntax->datum #'(<duration> ...))))
+             #:with result #'(animation '<id> <path> <hitbox> <size> '(<duration> ...) <length> 0 0))))
 
-(define (make-image name path [hitbox (rect 0 0 0 0)])
-  (image name path hitbox))
+(define-syntax (parse-world stx)
+  (syntax-parse stx
+    #:datum-literals (name uuid version
+                      changelog authors
+                      description resources zones)
+    [(_ (name <name>:str)
+        (~alt (~optional (uuid <uuid>:str)
+                         #:defaults ([<uuid> #'#f]))
+              (~optional (version <version>:str)
+                         #:defaults ([<version> #'#f]))
+              (~optional (description <desc>:str)
+                         #:defaults ([<desc> #'#f]))
+              (~optional (changelog <change>:change-exp ...))
+              (~optional (authors <author>:author-exp ...))
+              (~optional (resources <res>:resource-exp ...))
+              (~optional (zones <zone>:expr ...))) ...)
+     #`(world <name>
+              <uuid>
+              <version>
+              <desc>
+              (list #,@(if (attribute <change>) #'(<change>.result ...) #'()))
+              (list #,@(if (attribute <author>) #'(<author>.result ...) #'()))
+              (list #,@(if (attribute <res>) #'(<res>.result ...) #'()))
+              (list <zone> ...))]))
 
-(define (make-animation name path size frames [hitbox (rect 0 0 0 0)])
-  (animation name path hitbox size frames (length frames) 0 0))
-
-(define (make-zone name title size . actors)
-  (zone name title size actors))
-
-(define (make-world title sprites . zones)
-  (make-object world% 'title sprites zones))
+(define-syntax (parse-zone stx)
+  (syntax-parse stx
+    #:datum-literals (name map type outside inside rectangles actors)
+    [(_ zone-id:id
+        (~alt (~once (name <name>:str))
+              (~optional (map <map>:str)
+                         #:defaults ([<map> #'#f]))
+              (~optional (type (~and <type> (~or outside inside)))
+                         #:defaults ([<type> #'outside]))
+              (~once (rectangles <rectangle>:rect-exp ...))
+              (~once (actors <actor>:expr ...))) ...)
+     #'(zone '<id>
+             <name>
+             <map>
+             '<type>
+             (list <rectangle> ...)
+             (list <actor> ...))]))

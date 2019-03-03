@@ -1,5 +1,6 @@
 #lang rilouworld/quest
 
+(from quest use scrolling-bg spawner)
 (from spacecat use player troll star)
 
 (world
