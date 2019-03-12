@@ -6,8 +6,8 @@
   load-quest)
 
 (require
-  racket/list
-  racket/contract)
+  racket/contract/base
+  racket/list)
 
 (define (handle-load-error err)
   (if (exn:srclocs? err)

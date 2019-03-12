@@ -7,12 +7,12 @@
               #%module-begin)
   (rename-out (module-begin #%module-begin))
   define-quest-actor
-  (all-from-out rilouworld/private/quest/actors))
+  (all-from-out rilouworld/private/quest/props))
 
 (require
   (for-syntax racket/base
               syntax/parse)
-  rilouworld/private/quest/actors)
+  rilouworld/private/quest/props)
 
 (define-syntax (module-begin stx)
   (syntax-parse stx

@@ -1,7 +1,5 @@
 #lang racket/base
 
-;;; Base structs for the Quest language
-
 (provide
   ;; layer definition
   LAYERS
@@ -11,9 +9,6 @@
   gen:receiver
   receiver?
   receiver-emit
-
-  ;; utility procedure that emits an event to all given actors
-  emit-to-all
 
   ;; interface that allows the actor to display itself as a sprite
   gen:sprite
@@ -29,37 +24,23 @@
   sprite-holder?
   sprite-holder-children
 
-  ;; utility recursive function that searches for sprites and sprites-holders
-  ;; and returns a flatten list of sprites
-  collect-sprites
+  ;; world functions
+  handle-event
+  initialize-world!
+  collect-static-sprites
+  collect-dynamic-sprites
 
-  ;; base structs used in quest files
-  (struct-out pos)
-  (struct-out size)
-  (struct-out rect)
-
-  (struct-out change)
-  (struct-out author)
-
-  (struct-out resource)
-  (struct-out image)
-  (struct-out animation)
-
+  ;; base structs
   (struct-out world)
-  (struct-out zone)
-  (struct-out actor)
-
-  ;; give access to keyboard handling procedures
-  (all-from-out lux/chaos/gui/key))
+  (struct-out zone))
 
 (require
-  racket/generic
+  racket/contract/base
   racket/function
-  racket/contract
+  racket/generic
   racket/list
-  anaphoric
-  lux/chaos/gui/key
-  rilouworld/private/utils/struct)
+  (only-in rilouworld/private/quest/props
+           pos))
 
 (define LAYERS '(back back-actors player front-actors front ui))
 (define (layer-idx name) (index-of LAYERS name))
@@ -108,19 +89,6 @@
                       (cdr actors))]
     [else
      (collect-sprites result (cdr actors))]))
-
-(struct pos (x y) #:mutable)
-(struct size (w h) #:mutable)
-(struct rect pos (w h) #:mutable)
-
-(struct change (version date desc))
-(struct author (name section))
-
-(struct resource (name path))
-(struct image resource (hitbox))
-(struct animation image (size frames length [frame #:mutable] [last-change #:mutable]))
-
-(struct actor ())
 
 (struct zone (id name map type rectangles actors)
   #:methods gen:receiver

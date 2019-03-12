@@ -1,7 +1,6 @@
 #lang rilouworld/quest
 
-(from quest use scrolling-bg spawner)
-(from spacecat use player troll star)
+(from spacecat use scrolling-bg spawner player troll star)
 
 (world
   (name "Spacecat")
@@ -17,7 +16,7 @@
       (rectangles (rect 0 0 32 24))
       (actors
         ;; the space background scrolling behind the scene
-        (scrolling-bg (image space-bg-img) (direction left) (speed 0.2))
+        (scrolling-bg (image space-bg-img) (direction 'left) (speed 0.2))
 
         ;; an area that spawns background stars
         (spawner
@@ -25,8 +24,9 @@
           (actors
             [(freq .2) (particle (image bg-star-img)
                                  (pos <x> <y>)
-                                 (direction left)
-                                 (speed .30))]))
+                                 (direction 'left)
+                                 (speed .30)
+                                 (lifetime 1.0))]))
 
         ;; an area that spawns trolls and stars
         (spawner

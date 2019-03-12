@@ -1,10 +1,17 @@
 #lang rilouworld/bundle
 
-(require racket/contract
-         syntax/parse
-         (for-syntax racket/base syntax/parse))
+(require
+  racket/contract
+  rilouworld/quest
+  (for-syntax
+    racket/base
+    syntax/parse
+    rilouworld/private/quest/props-meta))
 
 (provide parse-simple-sprite
+         parse-scrolling-bg
+         parse-spawner
+         parse-particle
          (struct-out simple-sprite)
          (struct-out scrolling-bg)
          (struct-out spawner)
@@ -31,10 +38,11 @@
 
 (define-syntax (parse-simple-sprite stx)
   (syntax-parse stx
-    #:literals (pos)
     #:datum-literals (image)
-    [(_ (image img) (~and p (pos x y)))
-     #'(simple-sprite img p)]))
+    [(_ (~alt (~once (image <image>))
+              (~once <pos>:pos-exp)
+              ) ...)
+     #'(simple-sprite <image> <pos>)]))
 
 (struct scrolling-bg actor ([image #:mutable] direction speed)
   #:methods gen:receiver []
@@ -57,10 +65,19 @@
     (speed flonum?))
   (events))
 
+(define-syntax (parse-scrolling-bg stx)
+  (syntax-parse stx
+    #:datum-literals (image direction speed)
+    [(_ (~alt (~once (image <image>))
+              (~once (direction <direction>))
+              (~once (speed <speed>))
+              ) ...)
+     #'(scrolling-bg <image> <direction> <speed>)]))
+
 (struct spawner actor (rect spawn-infos)
   #:methods gen:receiver [])
 
-(struct spawn-info (freq constructor args))
+(struct spawn-info (freq constructor))
 
 (define-quest-actor spawner
   (attributes
@@ -68,12 +85,34 @@
     (actors (listof (list/c (list/c (or/c 'freq) flonum?) actor?))))
   (events))
 
-(struct particle simple-sprite (direction lifetime))
+(define-syntax (parse-spawner stx)
+  (syntax-parse stx
+    #:literals (rect)
+    #:datum-literals (actors freq)
+    [(_ (~alt (~once <rect>:rect-exp)
+              (~once (actors ((freq <freq>) <actor>) ...))
+              ) ...)
+     #'(spawner <rect>
+                (list (spawn-info <freq> (lambda (x y) '<actor>)) ...))]))
+
+(struct particle simple-sprite (direction speed lifetime))
 
 (define-quest-actor particle
   (attributes
     (image image?)
     (pos pos? #:replace)
     (direction direction?)
-    (speed flonum?))
+    (speed flonum?)
+    (lifetime flonum?))
   (events))
+
+(define-syntax (parse-particle stx)
+  (syntax-parse stx
+    #:datum-literals (image direction speed lifetime)
+    [(_ (~alt (~once (image <image>))
+              (~once <pos>:pos-exp)
+              (~once (direction <direction>))
+              (~once (speed <speed>))
+              (~once (lifetime <lifetime>))
+              ) ...)
+     #'(particle <image> <pos> <direction> <speed> <lifetime>)]))

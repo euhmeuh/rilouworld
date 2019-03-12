@@ -10,17 +10,14 @@
   (struct-out engine-options))
 
 (require
-  racket/class
   racket/function
-  racket/list
-  anaphoric
   mode-lambda
-  mode-lambda/static
-  lux
-  lux/chaos/gui
   (prefix-in gl: mode-lambda/backend/gl)
+  lux/chaos/gui
+  lux/word
   rilouworld/private/core/database
   rilouworld/private/utils/struct
+  rilouworld/private/quest/world
   (prefix-in quest: rilouworld/quest))
 
 (define LAYERS-NUM (length quest:LAYERS))
@@ -36,9 +33,8 @@
    (define (word-output self)
      ((loop-renderer self)))
    (define (word-event self event)
-     (send (loop-world self) handle-event self event))
+     (handle-event (loop-world self) self event))
    (define (word-tick self)
-     (send (loop-world self) emit 'tick)
      (current-frame (add1 (current-frame)))
      self)])
 
@@ -62,11 +58,11 @@
     (set! static-states-cache
           (or static-states-cache
               (map (curryr render-sprite sprite-db options)
-                   (send world collect-static-sprites))))
+                   (collect-static-sprites world))))
     static-states-cache)
   (define (dynamic-states)
     (map (curryr render-sprite sprite-db options)
-         (send world collect-dynamic-sprites)))
+         (collect-dynamic-sprites world)))
   (thunk
     (render-context (make-layer-config options)
                     (static-states)
@@ -98,8 +94,9 @@
     (sprite-ref (quest:resource-name animation) frame)))
 
 (define (make-loop options world account)
+  (initialize-world! world)
   (define sprite-db
-    (make-database (get-field resources world)))
+    (make-database (world-resources world)))
   (define render-context
     (with-values options (width height) from engine-options
       (make-render-context width height sprite-db)))

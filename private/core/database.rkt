@@ -8,7 +8,6 @@
   racket/class
   racket/function
   anaphoric
-  mode-lambda
   mode-lambda/static
   rilouworld/private/utils/log
   rilouworld/private/utils/struct
