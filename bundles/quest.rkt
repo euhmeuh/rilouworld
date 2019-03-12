@@ -3,6 +3,8 @@
 (require
   racket/contract
   rilouworld/quest
+  rilouworld/private/core/receiver
+  rilouworld/private/core/sprite
   (for-syntax
     racket/base
     syntax/parse

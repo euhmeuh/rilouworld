@@ -2,8 +2,7 @@
 
 ;;; the Quest language is a DSL for writing Rilouworlds
 
-(provide (except-out (all-from-out racket/base)
-                     #%module-begin)
+(provide #%app #%datum #%top quote
          (rename-out [module-begin #%module-begin])
          pos
          size
@@ -18,7 +17,9 @@
     racket/format
     syntax/parse
     rilouworld/private/quest/props-meta)
-  rilouworld/quest)
+  (only-in rilouworld/quest
+           pos size rect world zone
+           load-quest))
 
 (define-for-syntax (bundle-path name)
   (string->symbol (~a "rilouworld/bundles/" (syntax->datum name))))

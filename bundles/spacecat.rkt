@@ -16,6 +16,7 @@
   racket/match
   rilouworld/quest
   rilouworld/bundles/quest
+  rilouworld/private/core/receiver
   (only-in lux/chaos/gui/key
            key-event?
            key-event-code)

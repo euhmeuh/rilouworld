@@ -16,11 +16,12 @@
   lux/chaos/gui
   lux/word
   rilouworld/private/core/database
+  rilouworld/private/core/sprite
   rilouworld/private/utils/struct
   rilouworld/private/quest/world
   (prefix-in quest: rilouworld/quest))
 
-(define LAYERS-NUM (length quest:LAYERS))
+(define LAYERS-NUM (length LAYERS))
 (define FPS 60.0)
 
 (define current-frame (make-parameter 0))
@@ -49,7 +50,7 @@
 
 (define (make-layer-config options)
   (with-values options (width height) from engine-options
-    (for/vector ([layer-name quest:LAYERS])
+    (for/vector ([layer-name LAYERS])
       (layer (/ width 2.) (/ height 2.)))))
 
 (define (make-renderer options render-context sprite-db world)
@@ -69,8 +70,8 @@
                     (dynamic-states))))
 
 (define (render-sprite the-sprite sprite-db engine-options)
-  (with-values the-sprite (image layer) from quest:sprite
-    (define pos (quest:sprite-pos the-sprite (get-screen-size engine-options)))
+  (with-values the-sprite (image layer) from sprite
+    (define pos (sprite-pos the-sprite (get-screen-size engine-options)))
     (sprite (quest:pos-x pos) (quest:pos-y pos)
             (sprite-idx sprite-db (get-and-update-sprite! image))
             #:layer layer
