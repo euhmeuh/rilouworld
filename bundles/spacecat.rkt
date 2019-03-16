@@ -16,32 +16,26 @@
   racket/match
   rilouworld/quest
   rilouworld/bundles/quest
-  rilouworld/private/core/receiver
-  (only-in lux/chaos/gui/key
-           key-event?
-           key-event-code)
   (for-syntax
     racket/base
     syntax/parse
     rilouworld/private/quest/props-meta))
 
-(struct player simple-sprite ()
-  #:methods gen:receiver
-  [(define (receiver-emit self event)
-     (define pos (simple-sprite-pos self))
-     (define-values (x y) (values (pos-x pos) (pos-y pos)))
-     (define speed 10.)
-     (when (key-event? event)
-       (match (key-event-code event)
-         ['left (set-pos-x! pos (- x speed))]
-         ['right (set-pos-x! pos (+ x speed))]
-         ['up (set-pos-y! pos (- y speed))]
-         ['down (set-pos-y! pos (+ y speed))]
-         [_ #t])))])
+(define (on-player-key self key)
+  (let* ([pos (simple-sprite-pos self)]
+        [x (pos-x pos)]
+        [y (pos-y pos)]
+        [speed 10.])
+    (match key
+      ['left (set-pos-x! pos (- x speed))]
+      ['right (set-pos-x! pos (+ x speed))]
+      ['up (set-pos-y! pos (- y speed))]
+      ['down (set-pos-y! pos (+ y speed))]
+      [_ #t])))
 
-(define-quest-actor player
-  (attributes)
-  (events))
+(define-quest-actor player (from simple-sprite)
+  (events
+    (key on-player-key)))
 
 (define-syntax (parse-player stx)
   (syntax-parse stx
@@ -49,7 +43,7 @@
               (~once <pos>:pos-exp)) ...)
      #'(player <image> <pos>)]))
 
-(struct troll simple-sprite ())
+(define-quest-actor troll (from simple-sprite))
 
 (define-syntax (parse-troll stx)
   (syntax-parse stx
@@ -57,7 +51,7 @@
               (~once <pos>:pos-exp)) ...)
      #'(troll <image> <pos>)]))
 
-(struct star simple-sprite ())
+(define-quest-actor star (from simple-sprite))
 
 (define-syntax (parse-star stx)
   (syntax-parse stx

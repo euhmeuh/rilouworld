@@ -23,20 +23,17 @@
 
 ;; Base actors
 
-(struct simple-sprite actor ([image #:mutable] pos)
-  #:methods gen:sprite
-  [(define (sprite-pos self screen-size)
-     (simple-sprite-pos self))
-   (define (sprite-image self)
-     (simple-sprite-image self))
-   (define (set-sprite-image! self image)
-     (set-simple-sprite-image! self image))])
-
 (define-quest-actor simple-sprite
   (attributes
-    (image image?)
-    (pos pos? #:replace))
-  (events))
+    (image image? #:mutable)
+    (pos pos?))
+  (implements gen:sprite
+    (define (sprite-pos self screen-size)
+      (simple-sprite-pos self))
+    (define (sprite-image self)
+      (simple-sprite-image self))
+    (define (set-sprite-image! self image)
+      (set-simple-sprite-image! self image))))
 
 (define-syntax (parse-simple-sprite stx)
   (syntax-parse stx
@@ -46,26 +43,23 @@
               ) ...)
      #'(simple-sprite <image> <pos>)]))
 
-(struct scrolling-bg actor ([image #:mutable] direction speed)
-  #:methods gen:receiver []
-  #:methods gen:sprite
-  [(define (sprite-static? self) #t)
-   (define (sprite-pos self screen-size)
-     (pos (/ (size-w screen-size) 2.)
-          (/ (size-h screen-size) 2.)))
-   (define (sprite-layer self)
-     (layer-idx 'back))
-   (define (sprite-image self)
-     (scrolling-bg-image self))
-   (define (set-sprite-image! self image)
-     (set-scrolling-bg-image! self image))])
-
 (define-quest-actor scrolling-bg
   (attributes
-    (image image?)
+    (image image? #:mutable)
     (direction direction?)
     (speed flonum?))
-  (events))
+  (implements gen:receiver)
+  (implements gen:sprite
+    (define (sprite-static? self) #t)
+    (define (sprite-pos self screen-size)
+      (pos (/ (size-w screen-size) 2.)
+           (/ (size-h screen-size) 2.)))
+    (define (sprite-layer self)
+      (layer-idx 'back))
+    (define (sprite-image self)
+      (scrolling-bg-image self))
+    (define (set-sprite-image! self image)
+      (set-scrolling-bg-image! self image))))
 
 (define-syntax (parse-scrolling-bg stx)
   (syntax-parse stx
@@ -76,16 +70,13 @@
               ) ...)
      #'(scrolling-bg <image> <direction> <speed>)]))
 
-(struct spawner actor (rect spawn-infos)
-  #:methods gen:receiver [])
-
-(struct spawn-info (freq constructor))
-
 (define-quest-actor spawner
   (attributes
-    (rect rect? #:replace)
-    (actors (listof (list/c (list/c (or/c 'freq) flonum?) actor?))))
-  (events))
+    (rect rect?)
+    (actors spawn-info? #:list))
+  (implements gen:receiver))
+
+(struct spawn-info (freq constructor))
 
 (define-syntax (parse-spawner stx)
   (syntax-parse stx
@@ -97,16 +88,11 @@
      #'(spawner <rect>
                 (list (spawn-info <freq> (lambda (x y) '<actor>)) ...))]))
 
-(struct particle simple-sprite (direction speed lifetime))
-
-(define-quest-actor particle
+(define-quest-actor particle (from simple-sprite)
   (attributes
-    (image image?)
-    (pos pos? #:replace)
     (direction direction?)
     (speed flonum?)
-    (lifetime flonum?))
-  (events))
+    (lifetime flonum?)))
 
 (define-syntax (parse-particle stx)
   (syntax-parse stx
