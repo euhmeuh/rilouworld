@@ -1,8 +1,6 @@
 #lang rilouworld/bundle
 
-(require
-  rilouworld/bundles/quest
-  rilouworld/private/core/sprite)
+(require rilouworld/bundles/quest)
 
 (define (on-door-touch self actor) (void))
 (define (on-door-leave self actor) (void))

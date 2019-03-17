@@ -2,7 +2,7 @@
 
 ;;; the Quest language is a DSL for writing Rilouworlds
 
-(provide #%app #%datum #%top quote
+(provide #%app #%datum #%top quote lambda
          (rename-out [module-begin #%module-begin])
          pos
          size

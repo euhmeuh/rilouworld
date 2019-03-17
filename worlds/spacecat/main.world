@@ -1,6 +1,6 @@
 #lang rilouworld/quest
 
-(from spacecat use scrolling-bg spawner player troll star)
+(from spacecat use scrolling-bg spawner freq particle player troll star)
 
 (world
   (name "Spacecat")
@@ -22,18 +22,21 @@
         (spawner
           (rect 0 0 512 384)
           (actors
-            [(freq .2) (particle (image bg-star-img)
-                                 (pos <x> <y>)
+            (freq .2 (lambda (x y)
+                       (particle (image bg-star-img)
+                                 (pos x y)
                                  (direction 'left)
                                  (speed .30)
-                                 (lifetime 1.0))]))
+                                 (lifetime 1.0))))))
 
         ;; an area that spawns trolls and stars
         (spawner
           (rect 512 0 16 384)
           (actors
-            [(freq .5) (troll (image troll-img) (pos <x> <y>))]
-            [(freq .01) (star (image star-img) (pos <x> <y>))]))
+            (freq .5 (lambda (x y)
+                       (troll (image troll-img) (pos x y))))
+            (freq .01 (lambda (x y)
+                        (star (image star-img) (pos x y))))))
 
         ;; a test star
         (star (image star-img) (pos 100. 100.))
