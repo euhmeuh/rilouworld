@@ -76,6 +76,9 @@
     #:property prop:struct-info (lambda (self) (metactor-struct-info self))
     #:property prop:metattributes (lambda (self) (metactor-attributes self)))
 
+  (define (make-var-like-transformer id)
+    (set!-transformer-procedure (make-variable-like-transformer id)))
+
   (define (extract-metattributes stx)
     (and stx (let ([meta (syntax-local-value stx)])
                ((metattributes-ref meta) meta))))
@@ -129,18 +132,45 @@
      #'(begin
          (struct <id> (~? <parent> actor) (~? (<own-attr>.struct-pattern ...) ())
            #:name internal-id #:constructor-name internal-id
+           #:transparent
            (~@ . methods) ...
            (~? (~@ . receiver)))
 
          ;; we encapsulate the struct in our own identifier
          (define-syntax <id>
            (metactor
-             (make-variable-like-transformer #'internal-id)
+             (make-var-like-transformer #'internal-id)
              (extract-struct-info (syntax-local-value #'internal-id))
              (~? (quote-syntax ((<own-attr>.parse-pattern <own-attr>.term) ...)) #'())))
 
          (define-syntax (parse-id stx)
            (syntax-parse stx
              [(_ (~alt attr ...) ***)
-              #'(internal-id term ...)]))
+              #'(<id> term ...)]))
          )]))
+
+(module+ test
+  (require rackunit)
+
+  (define-quest-actor animal
+    (attributes
+      (name string?)))
+
+  (define-quest-actor fish (from animal)
+    (attributes
+      (scales symbol?)
+      (weight number?)))
+
+  (check-equal?
+    (parse-fish (name "Java")
+                (scales 'blue)
+                (weight 5))
+    (fish "Java" 'blue 5))
+
+  (check-equal?
+    (parse-fish (name "Big Red Fish")
+                (scales 'red)
+                (weight 12))
+    (fish "Big Red Fish" 'red 12))
+
+)

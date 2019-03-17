@@ -17,15 +17,15 @@
 
   (struct-out actor))
 
-(struct pos (x y) #:mutable)
-(struct size (w h) #:mutable)
-(struct rect pos (w h) #:mutable)
+(struct pos (x y) #:mutable #:transparent)
+(struct size (w h) #:mutable #:transparent)
+(struct rect pos (w h) #:mutable #:transparent)
 
-(struct change (version date desc))
-(struct author (name section))
+(struct change (version date desc) #:transparent)
+(struct author (name section) #:transparent)
 
-(struct resource (name path))
-(struct image resource (hitbox))
-(struct animation image (size frames length [frame #:mutable] [last-change #:mutable]))
+(struct resource (name path) #:transparent)
+(struct image resource (hitbox) #:transparent)
+(struct animation image (size frames length [frame #:mutable] [last-change #:mutable]) #:transparent)
 
-(struct actor ())
+(struct actor () #:transparent)
