@@ -106,11 +106,12 @@
               ) ...)
 
      ;; we find parent's attributes and merge them with our own
-     #:with ((attr term) ...) (merge-attributes
-                                (if (attribute <parent>) #'<parent> #f)
-                                (if (attribute attributes?)
-                                  #'((<own-attr>.parse-pattern <own-attr>.term) ...)
-                                  #'()))
+     #:with ((attr term name) ...)
+            (merge-attributes
+              (if (attribute <parent>) #'<parent> #f)
+              (if (attribute attributes?)
+                #'((<own-attr>.parse-pattern <own-attr>.term <own-attr>.<name>) ...)
+                #'()))
 
      ;; render all generic implementations
      #:with (methods ...) #'((#:methods <generic>.<id> [<generic>.<implem> ...]) ...)
@@ -141,10 +142,13 @@
            (metactor
              (make-var-like-transformer #'internal-id)
              (extract-struct-info (syntax-local-value #'internal-id))
-             (~? (quote-syntax ((<own-attr>.parse-pattern <own-attr>.term) ...)) #'())))
+             (~? (quote-syntax ((<own-attr>.parse-pattern
+                                 <own-attr>.term
+                                 <own-attr>.<name>) ...)) #'())))
 
          (define-syntax (parse-id stx)
            (syntax-parse stx
+             #:datum-literals (name ...)
              [(_ (~alt attr ...) ***)
               #'(<id> term ...)]))
          )]))
@@ -162,15 +166,15 @@
       (weight number?)))
 
   (check-equal?
-    (parse-fish (name "Java")
-                (scales 'blue)
+    (parse-fish (scales 'blue)
+                (name "Java")
                 (weight 5))
     (fish "Java" 'blue 5))
 
   (check-equal?
-    (parse-fish (name "Big Red Fish")
-                (scales 'red)
-                (weight 12))
+    (parse-fish (weight 12)
+                (name "Big Red Fish")
+                (scales 'red))
     (fish "Big Red Fish" 'red 12))
 
 )
