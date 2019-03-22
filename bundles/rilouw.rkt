@@ -1,5 +1,9 @@
 #lang rilouworld/bundle
 
+(provide
+  (actor-out door)
+  (actor-out home))
+
 (require rilouworld/bundles/quest)
 
 (define (on-door-touch self actor) (void))

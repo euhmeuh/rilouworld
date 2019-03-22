@@ -14,7 +14,7 @@
 (require
   (for-syntax
     racket/base
-    racket/format
+    racket/syntax
     syntax/parse
     rilouworld/private/quest/props-meta)
   (only-in rilouworld/quest
@@ -22,19 +22,19 @@
            load-quest))
 
 (define-for-syntax (bundle-path name)
-  (string->symbol (~a "rilouworld/bundles/" (syntax->datum name))))
+  (format-id name "rilouworld/bundles/~a" name))
 
 (define-syntax (module-begin stx)
-  (syntax-case stx (from use)
-    [(_ (from bundle use actor ...) ... expr)
-     (with-syntax ([(path ...)
-                    (datum->syntax stx
-                      (map bundle-path
-                           (syntax->list (syntax/loc stx (bundle ...)))))])
-       #'(#%module-begin
-           (provide object)
-           (require (only-in path actor ...)) ...
-           (define object expr)))]))
+  (syntax-parse stx
+    #:datum-literals (from use)
+    [(_ (from <bundle> use <actor> ...) ... <expr>)
+     #:with (path ...) (datum->syntax stx
+                         (map bundle-path
+                              (syntax->list #'(<bundle> ...))))
+     #'(#%module-begin
+         (provide object)
+         (require (only-in path <actor> ...)) ...
+         (define object <expr>))]))
 
 (define-syntax (parse-world stx)
   (syntax-parse stx

@@ -1,17 +1,17 @@
 #lang rilouworld/bundle
 
-(require
-  racket/contract)
+(provide
+  (actor-out simple-sprite)
+  (actor-out scrolling-bg)
+  (actor-out spawner)
+  (actor-out particle)
 
-(provide parse-simple-sprite
-         parse-scrolling-bg
-         parse-spawner
-         parse-particle
-         (struct-out simple-sprite)
-         (struct-out scrolling-bg)
-         (struct-out spawner)
-         (struct-out freq)
-         (struct-out particle))
+  (struct-out freq))
+
+(require
+  rilouworld/private/core/receiver
+  rilouworld/private/core/sprite
+  racket/contract)
 
 (define direction? (or/c 'up 'down 'left 'right))
 

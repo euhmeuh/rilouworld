@@ -2,16 +2,10 @@
 
 ;;; game logic for the spacecat world
 
-;; TODO: prevent having to rename-out everything
 (provide
-  (rename-out [parse-simple-sprite simple-sprite]
-              [parse-scrolling-bg scrolling-bg]
-              [parse-spawner spawner]
-              [parse-particle particle]
-              [parse-player player]
-              [parse-troll troll]
-              [parse-star star])
-  freq)
+  (actor-out player)
+  (actor-out troll)
+  (actor-out star))
 
 (require
   racket/match

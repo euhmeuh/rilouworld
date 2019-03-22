@@ -6,11 +6,10 @@
   (except-out (all-from-out racket/base)
               #%module-begin)
   (rename-out (module-begin #%module-begin))
-  define-quest-actor
 
-  (all-from-out rilouworld/private/quest/props)
-  (all-from-out rilouworld/private/core/receiver)
-  (all-from-out rilouworld/private/core/sprite))
+  define-quest-actor
+  actor-out
+  (all-from-out rilouworld/private/quest/props))
 
 (require
   (for-syntax racket/base
@@ -24,8 +23,7 @@
   racket/match
   rilouworld/quest
   rilouworld/private/quest/props
-  rilouworld/private/core/receiver
-  rilouworld/private/core/sprite)
+  rilouworld/private/core/receiver)
 
 (define-syntax (module-begin stx)
   (syntax-parse stx
@@ -71,13 +69,10 @@
                  (make-struct-type-property 'metattributes))
 
   ;; wrapper around the struct definition
-  (struct metactor (normal struct-info attributes)
-    #:property prop:procedure (struct-field-index normal)
+  (struct metactor (parser struct-info attributes)
+    #:property prop:procedure (struct-field-index parser)
     #:property prop:struct-info (lambda (self) (metactor-struct-info self))
     #:property prop:metattributes (lambda (self) (metactor-attributes self)))
-
-  (define (make-var-like-transformer id)
-    (set!-transformer-procedure (make-variable-like-transformer id)))
 
   (define (extract-metattributes stx)
     (and stx (let ([meta (syntax-local-value stx)])
@@ -94,7 +89,9 @@
 
 ;; This macro creates:
 ;; - a struct named <id> (with an optional parent)
-;; - a macro named parse-<id> to parse it into a constructor usage
+;; - a macro also named <id> that has two behaviors:
+;;   At compile-time, can be inherited to create larger macros
+;;   At run-time, parses an actor into a struct instance
 (define-syntax (define-quest-actor stx)
   (syntax-parse stx
     #:datum-literals (from attributes events implements)
@@ -106,11 +103,11 @@
               ) ...)
 
      ;; we find parent's attributes and merge them with our own
-     #:with ((attr term name) ...)
+     #:with ((attr-name attr-pat attr-term) ...)
             (merge-attributes
               (if (attribute <parent>) #'<parent> #f)
               (if (attribute attributes?)
-                #'((<own-attr>.parse-pattern <own-attr>.term <own-attr>.<name>) ...)
+                #'((<own-attr>.<name> <own-attr>.parse-pattern <own-attr>.term) ...)
                 #'()))
 
      ;; render all generic implementations
@@ -137,21 +134,32 @@
            (~@ . methods) ...
            (~? (~@ . receiver)))
 
+         (define-for-syntax (parse-id stx)
+           (syntax-parse stx
+             #:datum-literals (attr-name ...)
+             [(_ (~alt attr-pat ...) ***)
+              #'(internal-id attr-term ...)]))
+
          ;; we encapsulate the struct in our own identifier
          (define-syntax <id>
            (metactor
-             (make-var-like-transformer #'internal-id)
+             parse-id
              (extract-struct-info (syntax-local-value #'internal-id))
-             (~? (quote-syntax ((<own-attr>.parse-pattern
-                                 <own-attr>.term
-                                 <own-attr>.<name>) ...)) #'())))
-
-         (define-syntax (parse-id stx)
-           (syntax-parse stx
-             #:datum-literals (name ...)
-             [(_ (~alt attr ...) ***)
-              #'(<id> term ...)]))
+             (~? (quote-syntax ((<own-attr>.<name>
+                                 <own-attr>.parse-pattern
+                                 <own-attr>.term) ...)) #'())))
          )]))
+
+(define-syntax actor-out (make-rename-transformer #'struct-out))
+
+;; --- Test area below ---
+
+(module+ dolphin-test
+  (provide (actor-out dolphin))
+  (define-quest-actor dolphin
+    (attributes
+      (name string?)
+      (children dolphin? #:list))))
 
 (module+ test
   (require rackunit)
@@ -166,15 +174,37 @@
       (weight number?)))
 
   (check-equal?
-    (parse-fish (scales 'blue)
-                (name "Java")
-                (weight 5))
-    (fish "Java" 'blue 5))
+    (fish (scales 'blue)
+          (name "Java")
+          (weight 5))
+    (internal-fish "Java" 'blue 5))
 
   (check-equal?
-    (parse-fish (weight 12)
-                (name "Big Red Fish")
-                (scales 'red))
-    (fish "Big Red Fish" 'red 12))
+    (fish (weight 12)
+          (name "Big Red Fish")
+          (scales 'red))
+    (internal-fish "Big Red Fish" 'red 12))
+
+  (check-equal?
+    (fish-scales (fish (name "Bubble") (scales 'green) (weight 1)))
+    'green)
+
+  (define (submod-test)
+    (local-require (submod ".." dolphin-test))
+
+    (define skippy
+      (dolphin
+        (name "Skippy")
+        (children
+          (dolphin (name "Bumpy") (children))
+          (dolphin (name "Groovy") (children)))))
+
+    (check-equal? (dolphin-name skippy) "Skippy")
+    (check-equal?
+      (map (lambda (dolphin) (dolphin-name dolphin))
+           (dolphin-children skippy))
+      (list "Bumpy" "Groovy")))
+
+  (submod-test)
 
 )

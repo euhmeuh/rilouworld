@@ -1,6 +1,7 @@
 #lang rilouworld/quest
 
-(from spacecat use scrolling-bg spawner freq particle player troll star)
+(from quest use scrolling-bg spawner freq particle)
+(from spacecat use player troll star)
 
 (world
   (name "Spacecat")
