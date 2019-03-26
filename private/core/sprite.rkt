@@ -24,7 +24,7 @@
 (require
   racket/generic
   racket/list
-  (only-in rilouworld/private/quest/props pos))
+  (only-in rilouworld/private/quest/props vec))
 
 (define LAYERS '(back back-actors player front-actors front ui))
 (define (layer-idx name) (index-of LAYERS name))
@@ -37,7 +37,7 @@
   (sprite-static? sprite)
   #:fallbacks
   [(define (sprite-pos sprite screen-size)
-     (pos 0. 0.))
+     (vec 0. 0.))
    (define (sprite-image sprite)
      #f)
    (define (set-sprite-image! sprite image)

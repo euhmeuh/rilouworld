@@ -1,7 +1,8 @@
 #lang racket/base
 
 (provide
-  pos-exp
+  any-exp
+  vec-exp
   size-exp
   rect-exp
   change-exp
@@ -14,9 +15,17 @@
     rilouworld/private/quest/props)
   syntax/parse)
 
-(define-syntax-class pos-exp #:literals (pos) (pattern (pos x y)))
-(define-syntax-class size-exp #:literals (size) (pattern (size w h)))
-(define-syntax-class rect-exp #:literals (rect) (pattern (rect x y w h)))
+(define-syntax-class any-exp
+  (pattern expr #:with result #'expr))
+
+(define-splicing-syntax-class vec-exp
+  (pattern (~seq x y) #:with result #'(vec x y)))
+
+(define-splicing-syntax-class size-exp
+  (pattern (~seq x y) #:with result #'(size x y)))
+
+(define-splicing-syntax-class rect-exp
+  (pattern (~seq x y w h) #:with result #'(rect x y w h)))
 
 (define-syntax-class change-exp
   #:datum-literals (change version date breaking)
@@ -35,17 +44,17 @@
            #:with result #'(author <name> <section>)))
 
 (define-syntax-class resource-exp
-  #:datum-literals (image animation durations)
+  #:datum-literals (image animation rect durations)
   (pattern (image <id>:id
                   <path>:str
-                  (~optional <hitbox>:rect-exp
-                             #:defaults ([<hitbox> #'#f])))
-           #:with result #'(image '<id> <path> <hitbox>))
+                  (~optional (rect <hitbox>:rect-exp)
+                             #:defaults ([<hitbox>.result #'#f])))
+           #:with result #'(image '<id> <path> <hitbox>.result))
   (pattern (animation <id>:id
                       <path>:str
-                      (~optional <hitbox>:rect-exp
-                                 #:defaults ([<hitbox> #'#f]))
-                      <size>:size-exp
+                      (~optional (rect <hitbox>:rect-exp)
+                                 #:defaults ([<hitbox>.result #'#f]))
+                      (size <size>:size-exp)
                       (durations <duration>:nat ...))
            #:with <length> (datum->syntax this-syntax (length (syntax->datum #'(<duration> ...))))
-           #:with result #'(animation '<id> <path> <hitbox> <size> '(<duration> ...) <length> 0 0)))
+           #:with result #'(animation '<id> <path> <hitbox>.result <size>.result '(<duration> ...) <length> 0 0)))

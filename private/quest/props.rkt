@@ -4,7 +4,7 @@
 
 (provide
   ;; base structs used in quest files
-  (struct-out pos)
+  (struct-out vec)
   (struct-out size)
   (struct-out rect)
 
@@ -17,9 +17,9 @@
 
   (struct-out actor))
 
-(struct pos (x y) #:mutable #:transparent)
+(struct vec (x y) #:mutable #:transparent)
 (struct size (w h) #:mutable #:transparent)
-(struct rect pos (w h) #:mutable #:transparent)
+(struct rect (x y w h) #:mutable #:transparent)
 
 (struct change (version date desc) #:transparent)
 (struct author (name section) #:transparent)

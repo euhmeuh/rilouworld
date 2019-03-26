@@ -3,17 +3,13 @@
 ;;; the Bundle language is a DSL for writing Rilouworld bundles
 
 (provide
-  (except-out (all-from-out racket/base)
-              #%module-begin)
-  (rename-out (module-begin #%module-begin))
-
+  (all-from-out racket/base)
   define-quest-actor
   actor-out
   (all-from-out rilouworld/private/quest/props))
 
 (require
   (for-syntax racket/base
-              racket/match
               racket/struct-info
               racket/syntax
               syntax/parse
@@ -25,12 +21,6 @@
   rilouworld/private/quest/props
   rilouworld/private/core/receiver)
 
-(define-syntax (module-begin stx)
-  (syntax-parse stx
-    [(_ expr ...)
-     #'(#%module-begin
-        expr ...)]))
-
 (begin-for-syntax
   (define-syntax-class attr-exp
     (pattern (<name>:id
@@ -41,17 +31,21 @@
                     (~optional (~seq #:default <default>:expr))
                     ) ...)
              ;; used to generate the macro parse-<id>
-             #:with *** (quote-syntax ...)
+             #:attr *** (quote-syntax ...)
              #:attr maybe-list (and (attribute list?) #'***)
-             #:with term-name (format-id #'<name> "*~a*" #'<name>)
-             #:with term (if (attribute list?) #'(list term-name ***) #'term-name)
-             #:with verb (if (attribute <default>) #'~optional #'~once)
-             #:with pattern (match (syntax-e #'<name>)
-                              ;; handle special cases pos, size and rect
-                              ['pos #'(~var term-name pos-exp)]
-                              ['size #'(~var term-name size-exp)]
-                              ['rect #'(~var term-name rect-exp)]
-                              [_ #'(<name> term-name (~? maybe-list))])
+             #:attr term-name (format-id #'<name> "*~a*" #'<name>)
+             #:attr term-name-result (format-id #'term-name "~a.result" #'term-name)
+             #:with term (if (attribute list?) #'(list term-name-result ***) #'term-name-result)
+
+             #:attr verb (if (attribute <default>) #'~optional #'~once)
+             #:attr term-class (if (attribute list?)
+                                   #'any-exp
+                                   (case (syntax-e #'<contract>)
+                                     [(vec?) #'vec-exp]
+                                     [(size?) #'size-exp]
+                                     [(rect?) #'rect-exp]
+                                     [else #'any-exp]))
+             #:attr pattern #'(<name> (~var term-name term-class) (~? maybe-list))
              #:with parse-pattern #'(verb pattern)
 
              ;; used to generate the struct internal-<id>

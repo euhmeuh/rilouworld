@@ -4,7 +4,7 @@
 
 (provide #%app #%datum #%top quote lambda
          (rename-out [module-begin #%module-begin])
-         pos
+         vec
          size
          rect
          (rename-out [parse-world world])
@@ -18,8 +18,12 @@
     syntax/parse
     rilouworld/private/quest/props-meta)
   (only-in rilouworld/quest
-           pos size rect world zone
-           load-quest))
+    vec
+    size
+    rect
+    world
+    zone
+    load-quest))
 
 (define-for-syntax (bundle-path name)
   (format-id name "rilouworld/bundles/~a" name))
@@ -67,18 +71,18 @@
 
 (define-syntax (parse-zone stx)
   (syntax-parse stx
-    #:datum-literals (name map type outside inside rectangles actors)
+    #:datum-literals (name map type outside inside rectangles rect actors)
     [(_ <id>:id
         (~alt (~once (name <name>:str))
               (~optional (map <map>:str)
                          #:defaults ([<map> #'#f]))
               (~optional (type (~and <type> (~or outside inside)))
                          #:defaults ([<type> #'outside]))
-              (~once (rectangles <rectangle>:rect-exp ...))
+              (~once (rectangles (rect <rectangle>:rect-exp) ...))
               (~once (actors <actor>:expr ...))) ...)
      #'(zone '<id>
              <name>
              <map>
              '<type>
-             (list <rectangle> ...)
+             (list <rectangle>.result ...)
              (list <actor> ...))]))

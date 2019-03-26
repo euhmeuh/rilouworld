@@ -9,7 +9,6 @@
   (struct-out freq))
 
 (require
-  rilouworld/private/core/receiver
   rilouworld/private/core/sprite
   racket/contract)
 
@@ -20,7 +19,7 @@
 (define-quest-actor simple-sprite
   (attributes
     (image image? #:mutable)
-    (pos pos?))
+    (pos vec? #:mutable))
   (implements gen:sprite
     (define (sprite-pos self screen-size)
       (simple-sprite-pos self))
@@ -38,7 +37,7 @@
   (implements gen:sprite
     (define (sprite-static? self) #t)
     (define (sprite-pos self screen-size)
-      (pos (/ (size-w screen-size) 2.)
+      (vec (/ (size-w screen-size) 2.)
            (/ (size-h screen-size) 2.)))
     (define (sprite-layer self)
       (layer-idx 'back))
