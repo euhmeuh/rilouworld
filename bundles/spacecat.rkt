@@ -49,9 +49,9 @@
 
 (define-quest-actor player (from simple-sprite)
   (attributes
-    (speed flonum? #:mutable #:default 1.0)
-    (inertia vec? #:mutable #:private)
-    (intention vec? #:mutable #:private))
+    (speed flonum? #:mutable #:optional 1.0)
+    (inertia vec? #:mutable #:private (vec .0 .0))
+    (intention vec? #:mutable #:private (vec .0 .0)))
   (events
     (key on-player-key)
     (physics-tick on-player-physics-tick)))
