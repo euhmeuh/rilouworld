@@ -19,6 +19,7 @@
   racket/match
   rilouworld/quest
   rilouworld/private/quest/props
+  rilouworld/private/core/event
   rilouworld/private/core/receiver)
 
 (begin-for-syntax
@@ -110,11 +111,12 @@
      ;; specific implementation of gen:receiver for events
      #:attr receiver (and (attribute events?)
                           #'(#:methods gen:receiver
-                             [(define (receiver-emit self event)
-                                (let-values ([(type val) (qualify-event event)])
-                                  (match type
-                                    ['<event>.<type> (<event>.<callback> self val)] ...
-                                    [_ #t])))]))
+                             [(define (receiver-emit self ev)
+                                (match-let ([(event type val) ev])
+                                  (let ([val (if (list? val) val (list val))])
+                                    (match type
+                                      ['<event>.<type> (apply <event>.<callback> (cons self val))] ...
+                                      [_ #t]))))]))
 
      ;; render a macro named parse-<id>
      #:with parse-id (format-id #'<id> "parse-~a" (syntax-e #'<id>))

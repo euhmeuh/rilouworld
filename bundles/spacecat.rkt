@@ -8,24 +8,53 @@
   (actor-out star))
 
 (require
-  racket/match
   rilouworld/bundles/quest)
 
-(define (on-player-key self key)
-  (let* ([pos (simple-sprite-pos self)]
-         [x (pos-x pos)]
-         [y (pos-y pos)]
-         [speed 10.])
-    (match key
-      ['left (set-pos-x! pos (- x speed))]
-      ['right (set-pos-x! pos (+ x speed))]
-      ['up (set-pos-y! pos (- y speed))]
-      ['down (set-pos-y! pos (+ y speed))]
-      [_ #t])))
+(define (keys->intention keys speed)
+  (let* ([x (if (memq 'right keys) speed 0)]
+         [x (if (memq 'left keys) (- x speed) x)]
+         [y (if (memq 'down keys) speed 0)]
+         [y (if (memq 'up keys) (- y speed) y)])
+    (vec x y)))
+
+(define (vec-apply func vectors [start (cons 0 0)])
+  (for/fold ([x (car start)]
+             [y (cdr start)]
+             #:result (vec x y))
+            ([val vectors])
+    (let ([vec (if (number? val) (vec val val) val)])
+      (values (func x (vec-x vec))
+              (func y (vec-y vec))))))
+
+(define (vec+ . vectors)
+  (vec-apply + vectors))
+
+(define (vec* . vectors)
+  (vec-apply * vectors (cons 1 1)))
+
+(define (on-player-key self key keys)
+  (set-player-intention! self
+    (keys->intention keys (player-speed self))))
+
+(define fake-friction 0.9)
+
+(define (on-player-physics-tick self delta)
+  (set-player-inertia! self
+    (vec* (vec+ (player-inertia self)
+                (player-intention self))
+          fake-friction))
+  (set-simple-sprite-pos! self
+    (vec+ (simple-sprite-pos self)
+          (player-inertia self))))
 
 (define-quest-actor player (from simple-sprite)
+  (attributes
+    (speed flonum? #:mutable #:default 1.0)
+    (inertia vec? #:mutable #:private)
+    (intention vec? #:mutable #:private))
   (events
-    (key on-player-key)))
+    (key on-player-key)
+    (physics-tick on-player-physics-tick)))
 
 (define-quest-actor troll (from simple-sprite))
 

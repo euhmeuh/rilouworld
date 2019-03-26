@@ -13,6 +13,7 @@
 
 (require
   racket/contract/base
+  rilouworld/private/core/event
   rilouworld/private/core/receiver
   rilouworld/private/core/sprite)
 
@@ -30,7 +31,7 @@
 
 (define (handle-event world game-loop event)
   (cond
-   [(eq? event 'close) #f]
+   [(event-is? 'close event) #f]
    [(receiver-emit (world-current-zone world) event) game-loop]
    [else #f]))
 
