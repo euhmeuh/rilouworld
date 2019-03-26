@@ -45,7 +45,6 @@
         ;; the player
         (player (image spacecat-anim)
                 (pos 50. 256.)
-                (speed 1.0)
                 (inertia 0.0 0.0)
                 (intention 0.0 0.0))
 

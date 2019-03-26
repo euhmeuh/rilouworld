@@ -44,6 +44,7 @@
                          (and (attribute <optional>) #'<optional>))
 
       #:attr *** (quote-syntax ...)
+      #:attr *? (quote-syntax ~?)
       #:attr maybe-list (and (attribute list?) #'***)
 
       #:attr parse-clause (if (attribute <optional>) #'~optional #'~once)
@@ -52,9 +53,8 @@
       #:attr field-res (format-id #'field "~a.result" #'field)
 
       #:with parse-pat #'(parse-clause (<name> (~var field class) (~? maybe-list)))
-      #:with parse-res (if (attribute list?)
-                           #'(list field ***)
-                           #'field-res)
+      #:with parse-res #`(*? #,(if (attribute list?) #'(list field ***) #'field-res)
+                             (~? default))
       #:with struct-pat (if (attribute mutable?)
                             #'(<name> #:mutable)
                             #'<name>)))
@@ -172,12 +172,11 @@
   (define-quest-actor fish (from animal)
     (attributes
       (scales symbol?)
-      (weight number?)))
+      (weight number? #:optional 5)))
 
   (check-equal?
     (fish (scales 'blue)
-          (name "Java")
-          (weight 5))
+          (name "Java"))
     (internal-fish "Java" 'blue 5))
 
   (check-equal?
