@@ -23,14 +23,12 @@
   rilouworld/private/core/receiver)
 
 (begin-for-syntax
-  (define (get-field-class list? contract)
-    (if list?
-        #'any-exp
-        (case (syntax-e contract)
-          [(vec?) #'vec-exp]
-          [(size?) #'size-exp]
-          [(rect?) #'rect-exp]
-          [else #'any-exp])))
+  (define (get-field-class contract)
+    (case (syntax-e contract)
+      [(vec?) #'vec-exp]
+      [(size?) #'size-exp]
+      [(rect?) #'rect-exp]
+      [else #'any-exp]))
 
   (define-syntax-class attr-exp
     (pattern (<name>:id
@@ -42,22 +40,28 @@
                     ) ...)
       #:attr default (or (and (attribute <private>) #'<private>)
                          (and (attribute <optional>) #'<optional>))
-
-      #:attr *** (quote-syntax ...)
       #:attr *? (quote-syntax ~?)
+      #:attr *** (quote-syntax ...)
       #:attr maybe-list (and (attribute list?) #'***)
 
-      #:attr parse-clause (if (attribute <optional>) #'~optional #'~once)
-      #:attr class (get-field-class (attribute list?) #'<contract>)
-      #:attr field (format-id #'<name> "*~a*" #'<name>)
-      #:attr field-res (format-id #'field "~a.result" #'field)
+      #:attr field-name (format-id #'<name> "*~a*" #'<name>)
+      #:attr field-result (format-id #'field-name "~a.result" #'field-name)
+      #:attr field-class (if (attribute list?)
+                             #'any-exp
+                             (get-field-class #'<contract>))
+      #:attr amount (if (attribute <optional>) #'~optional #'~once)
 
-      #:with parse-pat #'(parse-clause (<name> (~var field class) (~? maybe-list)))
-      #:with parse-res #`(*? #,(if (attribute list?) #'(list field ***) #'field-res)
-                             (~? default))
-      #:with struct-pat (if (attribute mutable?)
-                            #'(<name> #:mutable)
-                            #'<name>)))
+      #:with pattern #'(amount ((~datum <name>)
+                                (~var field-name field-class)
+                                (~? maybe-list)))
+      #:with template #`(*? #,(if (attribute list?)
+                                  #'(list field-result ***)
+                                  #'field-result)
+                            (~? default))
+
+      #:with struct-field (if (attribute mutable?)
+                              #'(<name> #:mutable)
+                              #'<name>)))
 
   (define-syntax-class event-exp
     (pattern (<type>:id <callback>:expr)))
@@ -76,16 +80,7 @@
 
   (define (extract-metattributes stx)
     (and stx (let ([meta (syntax-local-value stx)])
-               ((metattributes-ref meta) meta))))
-
-  (define (stx-append stx-list-a stx-list-b)
-    (datum->syntax stx-list-a
-      (append (stx->list stx-list-a)
-              (stx->list stx-list-b))))
-
-  (define (merge-attributes parent attributes)
-    (define parent-attrs (or (extract-metattributes parent) #'()))
-    (stx-append parent-attrs attributes)))
+               ((metattributes-ref meta) meta)))))
 
 ;; This macro creates:
 ;; - a struct named <id> (with an optional parent)
@@ -97,18 +92,16 @@
     #:datum-literals (from attributes events implements)
     [(_ <id>
         (~optional (from <parent>))
-        (~alt (~optional (~and attributes? (attributes <own-attr>:attr-exp ...)))
+        (~alt (~optional (~and attributes? (attributes <attr>:attr-exp ...)))
               (~optional (~and events? (events <event>:event-exp ...)))
               (implements <generic>:generic-exp)
               ) ...)
 
-     ;; we find parent's attributes and merge them with our own
-     #:with ((attr-name attr-pat attr-res) ...)
-            (merge-attributes
-              (if (attribute <parent>) #'<parent> #f)
-              (if (attribute attributes?)
-                #'((<own-attr>.<name> <own-attr>.parse-pat <own-attr>.parse-res) ...)
-                #'()))
+     #:with ((parent-attr-pattern
+              parent-attr-template) ...)
+            (if (attribute <parent>)
+                (extract-metattributes #'<parent>)
+                #'())
 
      ;; render all generic implementations
      #:with (methods ...) #'((#:methods <generic>.<id> [<generic>.<implem> ...]) ...)
@@ -129,26 +122,30 @@
      #:with *** (quote-syntax ...)
 
      #'(begin
-         (struct <id> (~? <parent> actor) (~? (<own-attr>.struct-pat ...) ())
-           #:name internal-id #:constructor-name internal-id
+         (struct <id> (~? <parent> actor) (~? (<attr>.struct-field ...) ())
+           #:name internal-id
+           #:constructor-name internal-id
            #:transparent
            (~@ . methods) ...
            (~? (~@ . receiver)))
 
          (define-for-syntax (parse-id stx)
            (syntax-parse stx
-             #:datum-literals (attr-name ...)
-             [(_ (~alt attr-pat ...) ***)
-              #'(internal-id attr-res ...)]))
+             [(_ (~alt parent-attr-pattern ...
+                       (~@ . (~? (<attr>.pattern ...) ()))
+                       ) ***)
+              #'(internal-id parent-attr-template ...
+                             (~@ . (~? (<attr>.template ...) ())))]))
 
          ;; we encapsulate the struct in our own identifier
          (define-syntax <id>
            (metactor
              parse-id
              (extract-struct-info (syntax-local-value #'internal-id))
-             (~? (quote-syntax ((<own-attr>.<name>
-                                 <own-attr>.parse-pat
-                                 <own-attr>.parse-res) ...)) #'())))
+             (~? (quote-syntax
+                   ((parent-attr-pattern parent-attr-template) ...
+                    (<attr>.pattern <attr>.template) ...))
+                 #'())))
          )]))
 
 (define-syntax actor-out (make-rename-transformer #'struct-out))
