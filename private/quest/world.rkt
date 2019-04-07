@@ -26,8 +26,7 @@
      (collect-sprites '() (zone-actors self)))])
 
 (struct world (name uuid version desc changelog authors resources zones
-               [current-zone #:mutable]
-               [current-sprites #:mutable]))
+               [current-zone #:mutable]))
 
 (define (handle-event world game-loop event)
   (cond
@@ -36,13 +35,12 @@
    [else #f]))
 
 (define (initialize-world! world)
-  (set-world-current-zone! world (car (world-zones world)))
-  (set-world-current-sprites!
-    world
-    (sprite-holder-children (world-current-zone world))))
+  (set-world-current-zone! world (car (world-zones world))))
 
 (define (collect-static-sprites world)
-  (filter sprite-static? (world-current-sprites world)))
+  (filter sprite-static?
+          (sprite-holder-children (world-current-zone world))))
 
 (define (collect-dynamic-sprites world)
-  (filter (not/c sprite-static?) (world-current-sprites world)))
+  (filter (not/c sprite-static?)
+          (sprite-holder-children (world-current-zone world))))

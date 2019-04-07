@@ -55,8 +55,8 @@
   (cond
     [(empty? actors) result]
     [(sprite-holder? (car actors))
-     (collect-sprites (cons (sprite-holder-children (car actors))
-                            result)
+     (collect-sprites (append (sprite-holder-children (car actors))
+                              result)
                       (cdr actors))]
     [(sprite? (car actors))
      (collect-sprites (cons (car actors) result)

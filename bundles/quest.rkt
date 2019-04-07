@@ -46,11 +46,25 @@
     (define (set-sprite-image! self image)
       (set-scrolling-bg-image! self image))))
 
+(define (on-spawner-tick self frame)
+  (for ([actor (spawner-actors self)])
+    (when (= 0 (modulo frame (freq-value actor)))
+      (define-values (x y) (values 50. 50.))
+      (set-spawner-children! self
+        (cons ((freq-constructor actor) x y)
+              (spawner-children self))))))
+
 (define-quest-actor spawner
   (attributes
     (rect rect?)
-    (actors freq? #:list))
-  (events))
+    (actors freq? #:list)
+    (children actor? #:list #:mutable #:private '()))
+  (events
+    (tick on-spawner-tick))
+  (implements gen:sprite-holder
+    (define (sprite-holder-children self)
+      (local-require rilouworld/private/utils/log)
+      (collect-sprites '() (spawner-children self)))))
 
 (struct freq (value constructor))
 

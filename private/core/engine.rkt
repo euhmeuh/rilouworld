@@ -58,6 +58,7 @@
      (handle-event (loop-world self) self (qualify-event event)))
    (define (word-tick self)
      (current-frame (add1 (current-frame)))
+     (handle-event (loop-world self) self (event 'tick (current-frame)))
      ;; for now we just send a physics event every frame
      ;; with a fake delta of 1.0
      (handle-event (loop-world self) self (event 'physics-tick 1.0)))])

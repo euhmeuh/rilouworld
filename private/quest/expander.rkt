@@ -66,7 +66,6 @@
                 (~? (list <res>.<id> ...) '())
                 (~? (list <zone> ...) '())
                 #f ; current-zone
-                #f ; current-sprites
                 ))]))
 
 (define-syntax (parse-zone stx)
