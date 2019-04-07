@@ -4,9 +4,9 @@
 
 (provide
   (all-from-out racket/base)
+  (all-from-out rilouworld/quest)
   define-quest-actor
-  actor-out
-  (all-from-out rilouworld/private/quest/props))
+  actor-out)
 
 (require
   (for-syntax racket/base
@@ -18,7 +18,6 @@
               rilouworld/private/quest/props-meta)
   racket/match
   rilouworld/quest
-  rilouworld/private/quest/props
   rilouworld/private/core/event
   rilouworld/private/core/receiver)
 

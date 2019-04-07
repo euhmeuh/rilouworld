@@ -17,9 +17,19 @@
          [y (if (memq 'up keys) (- y speed) y)])
     (vec x y)))
 
-(define (vec-apply func vectors [start (cons 0 0)])
-  (for/fold ([x (car start)]
-             [y (cdr start)]
+(define (vec-lock-in-rect r v)
+  (if r
+      (vec (min
+             (max (vec-x v) (rect-x r))
+             (rect-w r))
+           (min
+             (max (vec-y v) (rect-y r))
+             (rect-h r)))
+      v))
+
+(define (vec-apply func vectors #:start [start (vec .0 .0)])
+  (for/fold ([x (vec-x start)]
+             [y (vec-y start)]
              #:result (vec x y))
             ([val vectors])
     (let ([vec (if (number? val) (vec val val) val)])
@@ -30,7 +40,7 @@
   (vec-apply + vectors))
 
 (define (vec* . vectors)
-  (vec-apply * vectors (cons 1 1)))
+  (vec-apply * vectors #:start (vec 1.0 1.0)))
 
 (define (on-player-key self key keys)
   (set-player-intention! self
@@ -44,12 +54,15 @@
                 (player-intention self))
           fake-friction))
   (set-simple-sprite-pos! self
-    (vec+ (simple-sprite-pos self)
-          (player-inertia self))))
+    (vec-lock-in-rect
+      (player-limits self)
+      (vec+ (simple-sprite-pos self)
+            (player-inertia self)))))
 
 (define-quest-actor player (from simple-sprite)
   (attributes
-    (speed flonum? #:mutable #:optional 1.0)
+    (limits rect? #:optional #f)
+    (speed flonum? #:optional 1.0)
     (inertia vec? #:mutable #:private (vec .0 .0))
     (intention vec? #:mutable #:private (vec .0 .0)))
   (events

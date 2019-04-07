@@ -44,6 +44,7 @@
 
         ;; the player
         (player (image spacecat-anim)
-                (pos 50. 256.))
+                (pos 50. 192.)
+                (limits 0. 0. 256. 384.))
 
         ))))
