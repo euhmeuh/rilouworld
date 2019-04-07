@@ -10,22 +10,29 @@
   resource-exp)
 
 (require
+  (for-syntax
+    racket/base
+    syntax/parse)
   (for-template
     racket/base
     rilouworld/private/quest/props)
   syntax/parse)
 
 (define-syntax-class any-exp
-  (pattern expr #:with result #'expr))
+  (pattern _ #:with result this-syntax))
 
-(define-splicing-syntax-class vec-exp
-  (pattern (~seq x y) #:with result #'(vec x y)))
+(define-syntax (define-prop-shortcut stx)
+  (syntax-parse stx
+    [(_ <class> (<id> <arg> ...))
+     #'(define-splicing-syntax-class <class>
+         (pattern (~seq ((~literal <id>) <arg> ...))
+                  #:with result #'(<id> <arg> ...))
+         (pattern (~seq <arg> ...)
+                  #:with result #'(<id> <arg> ...)))]))
 
-(define-splicing-syntax-class size-exp
-  (pattern (~seq x y) #:with result #'(size x y)))
-
-(define-splicing-syntax-class rect-exp
-  (pattern (~seq x y w h) #:with result #'(rect x y w h)))
+(define-prop-shortcut vec-exp (vec x y))
+(define-prop-shortcut size-exp (size x y))
+(define-prop-shortcut rect-exp (rect x y w h))
 
 (define-syntax-class change-exp
   #:datum-literals (change version date breaking)

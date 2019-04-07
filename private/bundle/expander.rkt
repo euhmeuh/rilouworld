@@ -51,13 +51,17 @@
                              (get-field-class #'<contract>))
       #:attr amount (if (attribute <optional>) #'~optional #'~once)
 
-      #:with pattern #'(amount ((~datum <name>)
-                                (~var field-name field-class)
-                                (~? maybe-list)))
-      #:with template #`(*? #,(if (attribute list?)
-                                  #'(list field-result ***)
-                                  #'field-result)
-                            (~? default))
+      #:with pattern (if (attribute <private>)
+                         #'(~not _) ;; match nothing
+                         #'(amount ((~datum <name>)
+                                    (~var field-name field-class)
+                                    (~? maybe-list))))
+      #:with template (if (attribute <private>)
+                          #'default
+                          #`(*? #,(if (attribute list?)
+                                      #'(list field-result ***)
+                                      #'field-result)
+                                (~? default)))
 
       #:with struct-field (if (attribute mutable?)
                               #'(<name> #:mutable)
@@ -132,20 +136,19 @@
          (define-for-syntax (parse-id stx)
            (syntax-parse stx
              [(_ (~alt parent-attr-pattern ...
-                       (~@ . (~? (<attr>.pattern ...) ()))
+                       (~? (~@ . (<attr>.pattern ...)))
                        ) ***)
               #'(internal-id parent-attr-template ...
-                             (~@ . (~? (<attr>.template ...) ())))]))
+                             (~? (~@ . (<attr>.template ...))))]))
 
          ;; we encapsulate the struct in our own identifier
          (define-syntax <id>
            (metactor
              parse-id
              (extract-struct-info (syntax-local-value #'internal-id))
-             (~? (quote-syntax
-                   ((parent-attr-pattern parent-attr-template) ...
-                    (<attr>.pattern <attr>.template) ...))
-                 #'())))
+             (quote-syntax
+               ((parent-attr-pattern parent-attr-template) ...
+                (~? (~@ . ((<attr>.pattern <attr>.template) ...)))))))
          )]))
 
 (define-syntax actor-out (make-rename-transformer #'struct-out))
