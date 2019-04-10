@@ -7,6 +7,7 @@
 (require
   racket/class
   racket/function
+  pkg/lib
   anaphoric
   mode-lambda/static
   rilouworld/private/utils/log
@@ -16,9 +17,18 @@
 (define (sprite-ref name index)
   (string->symbol (format "~a/~a" name index)))
 
+(define (add-placeholder-sprite! sprite-db)
+  (add-sprite!/file
+    sprite-db
+    'missing-image-placeholder
+    (build-path (pkg-directory "rilouworld")
+                "private/core/missing-image-placeholder.png")
+    #:palette 'palette))
+
 (define (make-database resources)
   (define sprite-db (make-sprite-db))
   (add-palette!/file sprite-db 'palette (build-path "." "worlds" "palette.png"))
+  (add-placeholder-sprite! sprite-db)
   (for-each
     (lambda (resource)
       (cond

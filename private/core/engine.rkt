@@ -28,7 +28,9 @@
 (define FPS 60.0)
 
 (define current-frame (make-parameter 0))
-(define current-key-state (make-key-state))
+(define current-missing-sprite (make-parameter 'missing-image-placeholder))
+
+(define global-key-state (make-key-state))
 
 (define (key-state->keys ks)
   (filter (not/c #f)
@@ -41,9 +43,9 @@
     [(event? ev) ev]
     [(key-event? ev)
      (begin
-       (key-state-update! current-key-state ev)
+       (key-state-update! global-key-state ev)
        (event 'key (list (key-event-code ev)
-                         (key-state->keys current-key-state))))]
+                         (key-state->keys global-key-state))))]
     [(symbol? ev) (event ev #f)]
     [else (event 'unknown ev)]))
 
@@ -97,7 +99,9 @@
   (with-values the-sprite (image layer) from sprite
     (define pos (sprite-pos the-sprite (get-screen-size engine-options)))
     (sprite (vec-x pos) (vec-y pos)
-            (sprite-idx sprite-db (get-and-update-sprite! image))
+            (or (sprite-idx sprite-db (get-and-update-sprite! image))
+                (sprite-idx sprite-db (current-missing-sprite))
+                0)
             #:layer layer
             #:pal-idx (palette-idx sprite-db 'palette))))
 

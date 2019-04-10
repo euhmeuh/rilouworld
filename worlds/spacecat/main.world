@@ -8,7 +8,7 @@
   (resources
     (animation spacecat-anim "spacecat/spacecat.png" (size 34 21) (durations 4 4 4 4 4 4))
     (image space-bg-img "spacecat/space-bg.png")
-    (image bg-star-img "spacecat/bg-star.png")
+    (animation bg-star-img "spacecat/bg-star.png" (size 7 7) (durations 2 2 2 2 2 2))
     (image star-img "spacecat/star.png" (rect 0 0 10 10))
     (image troll-img "spacecat/troll.png" (rect 0 0 10 10)))
   (zones

@@ -49,7 +49,11 @@
 (define (on-spawner-tick self frame)
   (for ([actor (spawner-actors self)])
     (when (= 0 (modulo frame (freq-value actor)))
-      (define-values (x y) (values 50. 50.))
+      (define r (spawner-rect self))
+      (define-values (x y) (values (exact->inexact
+                                     (apply random (rect-horizontal-range r)))
+                                   (exact->inexact
+                                     (apply random (rect-vertical-range r)))))
       (set-spawner-children! self
         (cons ((freq-constructor actor) x y)
               (spawner-children self))))))
