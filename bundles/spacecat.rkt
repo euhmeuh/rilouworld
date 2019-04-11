@@ -69,6 +69,13 @@
     (key on-player-key)
     (physics-tick on-player-physics-tick)))
 
-(define-quest-actor troll (from simple-sprite))
+(define (on-troll-physics-tick self delta)
+  (set-simple-sprite-pos! self
+    (vec+ (simple-sprite-pos self)
+          (vec -1.0 0.0))))
+
+(define-quest-actor troll (from simple-sprite)
+  (events
+    (physics-tick on-troll-physics-tick)))
 
 (define-quest-actor star (from simple-sprite))

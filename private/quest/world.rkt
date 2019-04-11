@@ -23,7 +23,7 @@
      (emit-to-all event (zone-actors self)))]
   #:methods gen:sprite-holder
   [(define (sprite-holder-children self)
-     (collect-sprites '() (zone-actors self)))])
+     (collect-sprites (zone-actors self)))])
 
 (struct world (name uuid version desc changelog authors resources zones
                [current-zone #:mutable]))

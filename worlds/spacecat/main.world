@@ -34,10 +34,10 @@
         (spawner
           (rect 512 0 16 384)
           (actors
-            (freq 500 (lambda (x y)
+            (freq 50 (lambda (x y)
                         (troll (image troll-img) (pos x y))))
-            (freq 1000 (lambda (x y)
-                         (star (image star-img) (pos x y))))))
+            (freq 100 (lambda (x y)
+                        (star (image star-img) (pos x y))))))
 
         ;; a test star
         (star (image star-img) (pos 100. 100.))

@@ -51,15 +51,18 @@
   (sprite-holder-children sprite-holder))
 
 ;; recursively find sprites in a list of actors
-(define (collect-sprites result actors)
+(define (collect-sprites* result actors)
   (cond
     [(empty? actors) result]
     [(sprite-holder? (car actors))
-     (collect-sprites (append (sprite-holder-children (car actors))
+     (collect-sprites* (append (sprite-holder-children (car actors))
                               result)
-                      (cdr actors))]
+                       (cdr actors))]
     [(sprite? (car actors))
-     (collect-sprites (cons (car actors) result)
-                      (cdr actors))]
+     (collect-sprites* (cons (car actors) result)
+                       (cdr actors))]
     [else
-     (collect-sprites result (cdr actors))]))
+     (collect-sprites* result (cdr actors))]))
+
+(define (collect-sprites actors)
+  (collect-sprites* '() actors))

@@ -19,7 +19,8 @@
   racket/match
   rilouworld/quest
   rilouworld/private/core/event
-  rilouworld/private/core/receiver)
+  rilouworld/private/core/receiver
+  rilouworld/private/core/sprite)
 
 (begin-for-syntax
   (define (get-field-class contract)
@@ -83,7 +84,11 @@
 
   (define (extract-metattributes stx)
     (and stx (let ([meta (syntax-local-value stx)])
-               ((metattributes-ref meta) meta)))))
+               ((metattributes-ref meta) meta))))
+
+  (define (stx-member stx-list stx)
+    (member (syntax-e stx)
+            (stx-map syntax-e stx-list))))
 
 ;; This macro creates:
 ;; - a struct named <id> (with an optional parent)
@@ -92,11 +97,12 @@
 ;;   At run-time, parses an actor into a struct instance
 (define-syntax (define-quest-actor stx)
   (syntax-parse stx
-    #:datum-literals (from attributes events implements)
+    #:datum-literals (from attributes events implements contains)
     [(_ <id>
         (~optional (from <parent>))
         (~alt (~optional (~and attributes? (attributes <attr>:attr-exp ...)))
               (~optional (~and events? (events <event>:event-exp ...)))
+              (~optional (contains <children>:id))
               (implements <generic>:generic-exp)
               ) ...)
 
@@ -113,11 +119,27 @@
      #:attr receiver (and (attribute events?)
                           #'(#:methods gen:receiver
                              [(define (receiver-emit self ev)
+                                (when (sprite-holder? self)
+                                  (emit-to-all ev (sprite-holder-children self)))
                                 (match-let ([(event type val) ev])
                                   (let ([val (if (list? val) val (list val))])
                                     (match type
                                       ['<event>.<type> (apply <event>.<callback> (cons self val))] ...
                                       [_ #t]))))]))
+
+     #:attr sprite-holder (and (attribute <children>)
+                               (with-syntax ([children-getter
+                                              (format-id #'<children> "~a-~a" #'<id> #'<children>)])
+                                 #'(#:methods gen:sprite-holder
+                                    [(define (sprite-holder-children self)
+                                       (collect-sprites (children-getter self)))])))
+
+     #:fail-when (and (attribute <children>)
+                      (or (not (attribute attributes?))
+                          (not (stx-member #'(<attr>.<name> ...) #'<children>))))
+       (format "Container children should be an attribute. Given value: ~a, possible values: ~a"
+               (syntax-e #'<children>)
+               (stx-map syntax-e #'(~? (<attr>.<name> ...) ())))
 
      ;; render a macro named parse-<id>
      #:with parse-id (format-id #'<id> "parse-~a" (syntax-e #'<id>))
@@ -130,7 +152,8 @@
            #:constructor-name internal-id
            #:transparent
            (~@ . methods) ...
-           (~? (~@ . receiver)))
+           (~? (~@ . receiver))
+           (~? (~@ . sprite-holder)))
 
          (define-for-syntax (parse-id stx)
            (syntax-parse stx

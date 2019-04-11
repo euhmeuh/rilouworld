@@ -65,10 +65,7 @@
     (children actor? #:list #:mutable #:private '()))
   (events
     (tick on-spawner-tick))
-  (implements gen:sprite-holder
-    (define (sprite-holder-children self)
-      (local-require rilouworld/private/utils/log)
-      (collect-sprites '() (spawner-children self)))))
+  (contains children))
 
 (struct freq (value constructor))
 
