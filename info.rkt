@@ -2,7 +2,7 @@
 
 (define pkg-desc "The decentralized game universe")
 (define pkg-authors '(euhmeuh))
-(define version "0.1.0")
+(define version "0.1")
 
 (define scribblings '(("scribblings/rilouworld.scrbl" (multi-page) (gui-library))))
 
